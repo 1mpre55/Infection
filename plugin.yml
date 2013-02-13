@@ -1,0 +1,18 @@
+name: Infection
+version: 0.1
+main: com.impress.Infection.Infection
+description: Infection gamemode
+author: 1mpre55
+softdepend: []
+commands:
+  infection:
+    description: Main command. Doesn't do anything yet
+    usage: /<command>
+    aliases:
+    - inf
+permissions:
+  infection.*:
+    children:
+      infection.something: true
+    description: Gives all Infection permissions
+    default: false
