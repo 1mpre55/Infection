@@ -17,7 +17,8 @@ public class Other {
 	 * @return random element from the list or null if the list is empty
 	 */
 	public static <V> V getRandomFromList(List<V> list) {
-		if (list.isEmpty()) return null;
+		if (list == null || list.isEmpty())
+			return null;
 		return list.get((int)(Math.random() * list.size()));
 	}
 	/**
@@ -43,6 +44,7 @@ public class Other {
 				if (rgb.length == 3)
 					return Color.fromRGB(rgb[0], rgb[1], rgb[2]);
 			} catch (NumberFormatException e) {}
+		if (string.equalsIgnoreCase("none")) return null;
 		if (string.equalsIgnoreCase("red")) return Color.RED;
 		if (string.equalsIgnoreCase("blue")) return Color.BLUE;
 		if (string.equalsIgnoreCase("green")) return Color.GREEN;

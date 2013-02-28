@@ -25,7 +25,7 @@ public class RulesLoader extends ConfigManager {
 		log = (logger == null)? Logger.getLogger("Minecraft") : logger;
 	}
 	
-	public static Rules getRules(String name) {
+	public Rules getRules(String name) {
 		return rules.get(name);
 	}
 	void addRules(String name, Rules rules) {
@@ -47,7 +47,6 @@ public class RulesLoader extends ConfigManager {
 		FileConfiguration config = getConfig();
 		Set<String> rulesNames = config.getKeys(false);
 		List<String> parentStack = new ArrayList<String>();
-		//log.info("[DEBUG] " + presetNames.size() + " maps found");
 		for (String rulesName : rulesNames.toArray(new String[rulesNames.size()]))
 			if (!rules.containsKey(rulesName))
 				try {
@@ -85,11 +84,7 @@ public class RulesLoader extends ConfigManager {
 				throw new ConfigurationMissingKeysException("Root rules " + rulesName + " is missing one or more keys.");
 			rls = new Rules(rulesName);
 		}
-//		try {
-			rls.load(rulesConfig);
-//		} catch (ArenaNotFoundException e) {
-//			throw new ArenaNotFoundException(e.getArenaName(), "Map '" + e.getArenaName() + "' was not found.");
-//		}
+		rls.load(rulesConfig);
 		rules.put(rulesName, rls);
 		parentStack.remove(rulesName);
 	}

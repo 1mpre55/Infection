@@ -1,2 +1,3 @@
 Infection
-=========
+
+A Bukkit plugin

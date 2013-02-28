@@ -15,10 +15,13 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import com.impress.Infection.exceptions.ConfigurationMismatchException;
 
 /**
  * A few tools for managing inventories
@@ -39,34 +42,38 @@ public class InvTools {
 		return result;
 	}
 	
-	private final static String type = "type",
-								amount = "amount",
-								damage = "damage",
-								data = "data",
-								enchs = "enchantments";
+	private final static String TYPE = "type",
+								AMOUNT = "amount",
+								DAMAGE = "damage",
+								NAME = "name",
+								LORE = "lore",
+								DATA = "data",
+								ENCHS = "enchantments";
 	/**
-	 * Loads an {@link ItemStack} from a given ConfigurationSection
-	 * @param config - {@link ConfigurationSection} to load item's data from
-	 * @return the resulting ItemStack or null if config is missing "type" key or if the type was not recognized
+	 * Loads an {@link ItemStack} from a given ConfigurationSection.
+	 * @param config - {@link ConfigurationSection} to load item's data from.
+	 * @return the resulting ItemStack or null if config is missing "type" key or if the type was not recognized.
+	 * @throws ConfigurationMismatchException if "type" key is missing or contains an unknown item type.
 	 */
 	public static ItemStack loadItem(ConfigurationSection config) {
 		if (config == null) throw new NullPointerException("null config");
 		Material m;
-		if (config.isInt(type))
-			m = Material.getMaterial(config.getInt(type));
+		if (config.isInt(TYPE))
+			m = Material.getMaterial(config.getInt(TYPE));
 		else
-			m = Material.matchMaterial(config.getString(type).trim());
-		if (m == null) return null;
+			m = Material.matchMaterial(config.getString(TYPE).trim());
+		if (m == null)
+			return null;
 		ItemStack result = new ItemStack(m);
 		int i;
-		if (config.isInt(amount) && (i = config.getInt(amount)) > 0)
+		if (config.isInt(AMOUNT) && (i = config.getInt(AMOUNT)) > 0)
 			result.setAmount(i);
-		if (config.isInt(damage) && (i = config.getInt(damage)) > Short.MIN_VALUE && i < Short.MAX_VALUE)
+		if (config.isInt(DAMAGE) && (i = config.getInt(DAMAGE)) > Short.MIN_VALUE && i < Short.MAX_VALUE)
 			result.setDurability((short)i);
-		if (config.isInt(data) && (i = config.getInt(data)) > Byte.MIN_VALUE && i < Byte.MAX_VALUE)
+		if (config.isInt(DATA) && (i = config.getInt(DATA)) > Byte.MIN_VALUE && i < Byte.MAX_VALUE)
 			result.setData(new MaterialData(result.getTypeId(), (byte)i));
-		if (config.isList(enchs) && config.getStringList(enchs) != null) {
-			String[] enchantments = config.getStringList(enchs).toArray(new String[0]);
+		if (config.isList(ENCHS) && config.getStringList(ENCHS) != null) {
+			String[] enchantments = config.getStringList(ENCHS).toArray(new String[0]);
 			String[] e;
 			Enchantment en;
 			int level;
@@ -87,6 +94,19 @@ public class InvTools {
 				result.addUnsafeEnchantment(en, level);
 			}
 		}
+		if (config.isString(NAME)) {
+			ItemMeta im = result.getItemMeta();
+			im.setDisplayName(config.getString(NAME));
+			result.setItemMeta(im);
+		}
+		if (config.isList(LORE)) {
+			List<String> lore = config.getStringList(LORE);
+			if (lore != null && !lore.isEmpty()) {
+				ItemMeta im = result.getItemMeta();
+				im.setLore(lore);
+				result.setItemMeta(im);
+			}
+		}
 		return result;
 	}
 	/**
@@ -97,18 +117,18 @@ public class InvTools {
 	 */
 	public static void saveItem(ConfigurationSection config, ItemStack item) {
 		if (config == null || item == null) throw new IllegalArgumentException();
-		config.set(type, item.getType().toString());
+		config.set(TYPE, item.getType().toString());
 		int i;
-		config.set(amount, (i = item.getAmount()) > 1 ? i : null);
-		config.set(damage, (i = item.getDurability()) == 0 ? null : i);
+		config.set(AMOUNT, (i = item.getAmount()) > 1 ? i : null);
+		config.set(DAMAGE, (i = item.getDurability()) == 0 ? null : i);
 		if (item.getEnchantments().isEmpty())
-			config.set(enchs, null);
+			config.set(ENCHS, null);
 		else {
 			List<String> enchantments = new ArrayList<String>();
 			Map<Enchantment,Integer> e = item.getEnchantments();
 			for (Enchantment ench : item.getEnchantments().keySet())
 				enchantments.add(ench.getName() + ':' + e.get(ench));
-			config.set(enchs, enchantments);
+			config.set(ENCHS, enchantments);
 		}
 	}
 	

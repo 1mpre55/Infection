@@ -13,27 +13,33 @@ import com.impress.Infection.exceptions.ConfigurationMissingKeysException;
  * @author 1mpre55
  */
 public class Rules implements Cloneable {
-	
-	public static enum Keys {
-		FRIENDLYFIRE("friendly-fire");
-		
-		private Keys(String key) {}
-		
-	}
-	
-	public static final String parentO			 = "parent",
+	private static final String parentO			 = "parent",
 							   friendlyFireO	 = "friendly-fire",
-							   timeLimitO		 = "time-limit";
+							   timeLimitO		 = "time-limit",
+							   joinAfterStartO	 = "allow-join-after-start",
+							   allowTeamChangeO	 = "allow-changing-team",
+							   clearInvOnLeaveO	 = "clear-items-when-leaving",
+							   teamArmorO		 = "use-team-armor",
+							   keepInventoryO	 = "keep-inventory",
+							   removeDropsO		 = "remove-death-drops",
+							   teamColorNametagO = "team-color-nametags";
 	
 	/**This will be used as default values for any rules that were not specified*/
-	private Rules parent;
 	private Set<String> keys;
 	public boolean modified;
 	
-	boolean friendlyFire;
-	long timeLimit;
+	public boolean friendlyFire;
+	public long timeLimit;
+	public boolean joinAfterStart;
+	public boolean allowTeamChange;
+	public boolean clearInvOnLeave;
+	public boolean teamArmor;
+	public boolean keepInventory;
+	public boolean removeDrops;
+	public boolean teamColorNametags;
 	
 	String name;
+	
 	public Rules(String name) {
 		if (name == null) throw new IllegalArgumentException("Null name");
 		this.name = name;
@@ -43,13 +49,24 @@ public class Rules implements Cloneable {
 		keys = config.getKeys(true);
 		
 		friendlyFire = config.getBoolean(friendlyFireO, true);
-		timeLimit = config.getLong(friendlyFireO, -1);
+		timeLimit = config.getLong(timeLimitO, -1);
+		joinAfterStart = config.getBoolean(joinAfterStartO, true);
+		allowTeamChange = config.getBoolean(allowTeamChangeO, true);
+		clearInvOnLeave = config.getBoolean(clearInvOnLeaveO, false);
+		teamArmor = config.getBoolean(teamArmorO, false);
+		keepInventory = config.getBoolean(keepInventoryO, false);
+		removeDrops = config.getBoolean(removeDropsO, false);
+		teamColorNametags = config.getBoolean(teamColorNametagO, false);
 		
 		modified = false;
 		return false;
 	}
 	public void save(ConfigurationSection config) {
-		// TODO
+		if (keys.contains(friendlyFireO))
+			config.set(friendlyFireO, friendlyFire);
+		if (keys.contains(timeLimitO))
+			config.set(timeLimitO, timeLimit);
+		
 		modified = false;
 	}
 	

@@ -1,0 +1,12 @@
+# Settings that apply to speciffic matches. Can be re-used for different games and/or arenas. Supports inheritance
+
+test-rules:
+  parent: root-rules
+
+small-map-rules:
+  parent: root-rules
+  time-limit: 300
+
+root-rules:
+  friendly-fire: on
+  time-limit: 600

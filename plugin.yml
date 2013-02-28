@@ -3,11 +3,11 @@ version: 0.1
 main: com.impress.Infection.Infection
 description: Infection gamemode
 author: 1mpre55
-softdepend: []
+softdepend: [TagAPI, DisguiseCraft]
 commands:
   infection:
-    description: Main command. Doesn't do anything yet
-    usage: /<command>
+    description: Main command.
+    usage: /<command> <action> [args...]
     aliases:
     - inf
 permissions:

@@ -1,0 +1,22 @@
+# Settings that apply to specific games
+# Possible rename 'game' to: battle, event, competition, contest, ect.
+
+test-game:
+  arenas:
+    # Format: - arena:rules:[messages]
+  - test-arena:test-rules:test-messages
+  arena-order: SEQUENTIAL
+  loop: true
+  
+  teams:
+    Zombies:
+      # Use "name:" if the name must contain special characters.
+      name: '#team:Zombie.'
+      # Color of the team. Used for dyed armor, color nametags, chat messages and broadcasts.
+      color: none
+      # Current types: default (regular), spectators, zombies and survivors. 
+      type: zombie
+      # Disguise as a zombie. THIS ONLY AFFECTS ZOMBIE TYPE TEAMS
+      disguise: true
+    Survivors:
+      type: survivors

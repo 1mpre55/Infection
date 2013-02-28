@@ -1,0 +1,27 @@
+# Messages and message-related settings. Eventually more messages will be added here until all messages sent to players and/or console can be customized (except debug messages).
+test-messages:
+  personal:
+    join: You joined <GAME>
+    leave: You left <GAME>
+    infected: You got infected
+  
+  game-broadcast:
+    join: <PLAYER> joined the game
+    leave: <PLAYER> left the game
+    infected: <PLAYER> was infected by <ZOMBIE_PLAYER>
+    
+    game-start: <GAME> started. Have fun
+    game-end: <GAME> ended.
+    
+    game-end-timer:
+      60: 1 minute left
+      30: 30 seconde left
+      10: 10 seconds left
+  
+  public-broadcast:
+  # Leave messages empty to disable them
+    join:
+    leave:
+    
+    game-start:
+    game-end:

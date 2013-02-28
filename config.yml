@@ -1,0 +1,4 @@
+# Global settings
+# This is the only configuration file that will not be modified by the plugin
+
+default-messages: test-messages

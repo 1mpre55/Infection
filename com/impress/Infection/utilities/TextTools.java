@@ -2,6 +2,7 @@ package com.impress.Infection.utilities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class TextTools {
 	/**
@@ -35,6 +36,14 @@ public class TextTools {
 	 * @return the resulting string.
 	 */
 	public static String separateWithCommas(List<String> values) {
+		return separateWithCommas(values.toArray(new String[0]));
+	}
+	/**
+	 * Combines the strings in the Set into a single CSV string.
+	 * @param values - Set of strings to combine.
+	 * @return the resulting string.
+	 */
+	public static String separateWithCommas(Set<String> values) {
 		return separateWithCommas(values.toArray(new String[0]));
 	}
 	/**
