@@ -66,19 +66,38 @@ public class Arena {
 			return tSpawns.size();
 	}
 	
+	/**
+	 * Creates a new Arena and puts it in the plugin's arena list
+	 */
 	public Arena() {
 		instances.add(this);
 	}
+	/**
+	 * Removes this arena from plugin's arena list
+	 */
 	public void remove() {
 		instances.remove(this);
 	}
 	
-	private boolean isInBounds(Location loc) {
+	/**
+	 * Checks if the given location is within the arena's area. Returns true if the arena does not have a specified area
+	 * @param loc - location to check.
+	 * @return - true if the location is in arena's area, false otherwise.
+	 */
+	boolean isInBounds(Location loc) {
 		if (dimentions == null) return true;
 		return (loc.getX() > dimentions[0][0] && loc.getX() < dimentions[0][1] &&
 				loc.getY() > dimentions[1][0] && loc.getY() < dimentions[1][1] &&
 				loc.getZ() > dimentions[2][0] && loc.getZ() < dimentions[2][1]);
 	}
+	/**
+	 * If the given coordinates (or player's location if <b>from</b> is null) is outside the arena, it will be moved to the closest point within the arena
+	 * and the given player will be teleported to the new location. Either argument can be null. This will not do anything if both arguments are null or if
+	 * the source location is already within the arena's bounds.
+	 * <br><i>Note: this will modify the given <b>from</b> location if it's outside the arena</i>
+	 * @param from - the coordinates that may be outside the arena. This will be modified moving it to the closest location inside the arena.
+	 * @param player - the player to be teleported to the resulting location. This may be null. If <b>from</b> is null player's location will be used instead.
+	 */
 	public void getInBounds(Location from, Player player) {
 		if (from == null)
 			if (player == null)
@@ -95,7 +114,15 @@ public class Arena {
 			player.teleport(from);
 	}
 	
+	/**
+	 * Plugin's list of arenas
+	 */
 	public static final HashSet<Arena> instances = new HashSet<Arena>(5);
+	/**
+	 * Returns an arena that's responsible for the given location. If there are multiple arenas sharing that location, it will return one of them.
+	 * @param loc - the location
+	 * @return the arena in that location
+	 */
 	public static Arena getFromLocation(Location loc) {
 		for (Arena arena : instances.toArray(new Arena[0]))
 			if (arena.dimentions != null && arena.isInBounds(loc))

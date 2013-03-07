@@ -107,6 +107,15 @@ public class Game {
 		Messages messages;
 	}
 	
+	/**
+	 * Called when a player uses a join command. This methods checks if the player is allowed to join.
+	 * To bypass the checks simply call player.joinGame()
+	 * @param player - player that wants to join
+	 * @param team - the team that this player wants to join or null to auto-select one
+	 * @throws GameException if the player is not allowed to join. Possible reasons: no join permission, no event was chosen yet,
+	 * team not found, player is already playing a game, no permission to ignore team balance or unable to join after the game started.
+	 * Use exception.getMessage() for a player-friendly reason that they're unable to join.
+	 */
 
 	public void playerJoin(IPlayer player, String team) throws GameException {
 		if (player == null)
@@ -142,6 +151,12 @@ public class Game {
 				System.out.println("[DEBUG] Player " + player.player.getName() + " joined the game");
 		}
 	}
+	/**
+	 * Called when player uses the leave command. There is currently no situation when a player is not allowed to leave a game,
+	 * so calling this will guarantee that the player is no longer playing this game. To make the player leave ANY game call player.leaveGame()
+	 * @param player - player that wants to leave
+	 * @return true if player was playing this game, false otherwise
+	 */
 	public boolean playerLeave(IPlayer player) {
 		if (Infection.debug)
 			System.out.println("[DEBUG] Player '" + player + "' is quitting the game");
@@ -158,6 +173,15 @@ public class Game {
 			return false;
 		}
 	}
+	/**
+	 * Called when a player uses the team change command. This methods checks if the player is allowed to change team.
+	 * To bypass the checks call player.setTeam()
+	 * @param player - the player that wants to change team
+	 * @param team - the new team
+	 * @throws TeamNotFoundException if the game does not contain a team with that name
+	 * @throws NoPermissionException if the player does not have permission to perform this operation.
+	 * Possible reasons: no permission to change teams, no permission to ignore team balance.
+	 */
 	public void playerChangeTeam(IPlayer player, String team) throws TeamNotFoundException, NoPermissionException {
 		if (player == null)
 			throw new IllegalArgumentException("Null player");

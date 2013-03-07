@@ -20,9 +20,10 @@ public class IPlayer {
 	/**A map containing all players by their name*/
 	final static HashMap<String, IPlayer> instances = new HashMap<String, IPlayer>();
 	/**
-	 * Returns an {@link IPlayer} object for the given player. If no object was found, a new one will be generated.
+	 * Returns an {@link IPlayer} object for the given player. If the object was found in the plugin's player list it will generate a new one.
 	 * This method is guaranteed to return a non-null result
-	 * @param player
+	 * @param player - the player
+	 * @return IPlayer associated with the given player
 	 */
 	public static IPlayer getIPlayer(Player player) {
 		if (instances.containsKey(player.getName()))
@@ -33,6 +34,10 @@ public class IPlayer {
 	public IPlayer(Player player) {
 		instances.put((this.player = player).getName(), this);
 	}
+	/**
+	 * Makes the player leave their current game, saves all their data to disk and removes them from plugin's player list.
+	 * <b>This should only be called when the player leaves the server.</b> 
+	 */
 	public void remove() {
 		if (isPlaying())
 			leaveGame(false, true);
@@ -44,12 +49,27 @@ public class IPlayer {
 	Team team;
 	boolean spectating;
 	
+	/**
+	 * Player's kill count in the current game
+	 */
 	public int kills;
+	/**
+	 * Player's betrayal counter in the current game
+	 */
 	public int betrayals;
+	/**
+	 * Player's death counter in the current game
+	 */
 	public int deaths;
+	/**
+	 * The number of players that this player infected in the current Infection game
+	 */
 	public int infected;
-	
+	/**
+	 * Player's score in the current game
+	 */
 	public int score;
+	
 	private Location oldLocation;
 	private Location oldCompassTarget;
 //	private SavedPlayerInventory respawnInv;
@@ -197,10 +217,18 @@ public class IPlayer {
 			// TODO
 		}
 	}
+	/**
+	 * Returns true if the player is in the spectators team, false otherwise
+	 * @return whether or not the player is in the spectators team
+	 */
 	
 	public boolean isSpectator() {
 		return team instanceof Spectators;
 	}
+	/**
+	 * Forces the player onto a spectators team
+	 * @param spectate
+	 */
 	public void setSpectator(boolean spectate) {
 		if (spectate == isSpectator())
 			return;
@@ -238,18 +266,38 @@ public class IPlayer {
 					kit.giveToPlayer(player, false, false, true);
 	}
 	
+	/**
+	 * Returns whether the player is currently playing a game or not
+	 * @return true if the player is playing, false otherwise
+	 */
 	public boolean isPlaying() {
 		return game != null;
 	}
+	/**
+	 * Returns the {@link Game} that this player is playing or null if the player is not playing
+	 * @return player's current game
+	 */
 	public Game getGame() {
 		return game;
 	}
+	/**
+	 * Returns player's current {@link Team} or null if they're not playing
+	 * @return the team that this player is part of
+	 */
 	public Team getTeam() {
 		return team;
 	}
+	/**
+	 * Returns the color of player's team
+	 * @return chat color
+	 */
 	public ChatColor getChatColor() {
 		return team.cColor;
 	}
+	/**
+	 * Sets player's compass target to a given location
+	 * @param t - the new target location
+	 */
 	public void setCompassTarget(Location t) {
 		if (t != null) {
 			if (oldCompassTarget == null)
@@ -257,6 +305,9 @@ public class IPlayer {
 			player.setCompassTarget(t);
 		}
 	}
+	/**
+	 * Resets player's compass target to the original
+	 */
 	public void resetCompassTarget() {
 		if (oldCompassTarget != null)
 			player.setCompassTarget(oldCompassTarget);

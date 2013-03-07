@@ -40,11 +40,20 @@ public class Rules implements Cloneable {
 	
 	String name;
 	
+	/**
+	 * Creates an empty rules container
+	 * @param name
+	 */
 	public Rules(String name) {
 		if (name == null) throw new IllegalArgumentException("Null name");
 		this.name = name;
 	}
 	
+	/**
+	 * Loads the rules from <b>config</b>
+	 * @param config {@link ConfigurationSection} to load the rules from
+	 * @throws ConfigurationMissingKeysException if the config is missing some required keys. Currently there aren't any.
+	 */
 	public boolean load(ConfigurationSection config) throws ConfigurationMissingKeysException {
 		keys = config.getKeys(true);
 		
@@ -61,6 +70,10 @@ public class Rules implements Cloneable {
 		modified = false;
 		return false;
 	}
+	/**
+	 * Saves the rules to <b>config</b>
+	 * @param config - {@link ConfigurationSection} to save the rules to
+	 */
 	public void save(ConfigurationSection config) {
 		if (keys.contains(friendlyFireO))
 			config.set(friendlyFireO, friendlyFire);

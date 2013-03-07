@@ -40,8 +40,18 @@ import com.impress.Infection.utilities.TextTools;
  * @version 0.0.2
  */
 public class Infection extends JavaPlugin {
+	/**
+	 * The base permission node including the '.' at the end
+	 */
 	public static final String basePerm = "infection.";
-	public static boolean debug = false, tagAPI, disguiseCraft, mobDisguise;
+	/**
+	 * Whether debug messages should be printed or not
+	 */
+	public static boolean debug = false;
+	/**
+	 * Indicates whether the external plugin with the same name is loaded and should be used if needed.
+	 */
+	public static boolean tagAPI, disguiseCraft, mobDisguise;
 	
 	Map<String, Game> games;
 	Game mainGame;

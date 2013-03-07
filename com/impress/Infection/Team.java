@@ -19,6 +19,9 @@ import com.impress.Infection.utilities.Other;
  * @author 1mpre55
  */
 public class Team {
+	/**
+	 * The name of the team.
+	 */
 	public final String name;
 	final Set<IPlayer> players = new HashSet<IPlayer>();
 	final Game game;
@@ -28,6 +31,11 @@ public class Team {
 	private Rules rules;
 	private Messages messages;
 	
+	/**
+	 * Creates a new team.
+	 * @param game - the game that this team is part of
+	 * @param name - name of the team
+	 */
 	public Team(Game game, String name) {
 		if (game == null)
 			throw new IllegalArgumentException("Game cannot be null");
@@ -36,11 +44,19 @@ public class Team {
 		this.name = name;
 		this.game = game;
 	}
+	/**
+	 * Loads team's options
+	 * @param config - ConfigurationSection containing the options
+	 */
 	public void load(ConfigurationSection config) {
 		setColor(config.getString("color"));
 		if (config.isString("rules"))
 			rules = game.plugin.rulesLoader.getRules(config.getString("rules"));
 	}
+	/**
+	 * Sets team color
+	 * @param color - new color or null to remove color
+	 */
 	public void setColor(Color color) {
 		this.color = color;
 		if (color == null)
@@ -52,6 +68,10 @@ public class Team {
 			for (IPlayer player : players.toArray(new IPlayer[players.size()]))
 				TagAPIListener.refreshPlayer(player.player);
 	}
+	/**
+	 * Sets team color
+	 * @param color - name of the new color or null to remove color
+	 */
 	public void setColor(String color) {
 		setColor(Other.colorFromString(color));
 	}
@@ -75,9 +95,18 @@ public class Team {
 		}
 	}
 	
+	/**
+	 * Sends a team chat message from a given player
+	 * @param sender - the sender of the message
+	 * @param message - the message
+	 */
 	public void teamChat(IPlayer sender, String message) {
 		broadcast('<' + sender.player.getDisplayName() + "> " + message);	// TODO
 	}
+	/**
+	 * Broadcasts a message to all players on the team
+	 * @param message - the message
+	 */
 	public void broadcast(String message) {
 		for (IPlayer pd : players.toArray(new IPlayer[players.size()]))
 			pd.player.sendMessage(message);
@@ -87,18 +116,32 @@ public class Team {
 		for (IPlayer pd : players.toArray(new IPlayer[players.size()]))
 			pd.setCompassTarget(t);
 	}
+	/**
+	 * Gives a kit to all player on the team.
+	 * @param kit - the kit
+	 */
 	public void giveKit(Kit kit) {
 		if (kit == null) return;
 		for (IPlayer pd : players.toArray(new IPlayer[players.size()]))
 			kit.giveToPlayer(pd.player, false, false, true);
 	}
 	
+	/**
+	 * Returns {@link Rules} that apply to this team. May return null if the team
+	 * does not have it's own rules and if the game did not choose an event yet
+	 * @return team's rules
+	 */
 	public Rules getRules() {
 		if (rules == null)
 			return game.getEvent().rules;
 		else
 			return rules;
 	}
+	/**
+	 * Returns {@link Messages} associated with this team. May return null if the team
+	 * does not have it's own {@link Messages} and if the game did not choose an event yet
+	 * @return
+	 */
 	public Messages getMessages() {
 		if (messages == null)
 			return game.getEvent().messages;
