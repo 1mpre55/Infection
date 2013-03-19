@@ -54,7 +54,7 @@ public class Rules implements Cloneable {
 	 * @param config {@link ConfigurationSection} to load the rules from
 	 * @throws ConfigurationMissingKeysException if the config is missing some required keys. Currently there aren't any.
 	 */
-	public boolean load(ConfigurationSection config) throws ConfigurationMissingKeysException {
+	public void load(ConfigurationSection config) throws ConfigurationMissingKeysException {
 		keys = config.getKeys(true);
 		
 		friendlyFire = config.getBoolean(friendlyFireO, true);
@@ -68,7 +68,6 @@ public class Rules implements Cloneable {
 		teamColorNametags = config.getBoolean(teamColorNametagO, false);
 		
 		modified = false;
-		return false;
 	}
 	/**
 	 * Saves the rules to <b>config</b>

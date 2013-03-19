@@ -11,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import com.impress.Infection.data.Kit;
 import com.impress.Infection.data.Messages;
 import com.impress.Infection.data.Rules;
+import com.impress.Infection.data.Spawns;
 import com.impress.Infection.listeners.TagAPIListener;
 import com.impress.Infection.utilities.Other;
 
@@ -25,6 +26,7 @@ public class Team {
 	public final String name;
 	final Set<IPlayer> players = new HashSet<IPlayer>();
 	final Game game;
+	Spawns spawns;
 	Color color;
 	ChatColor cColor;
 	public boolean colorNametag;
@@ -43,6 +45,17 @@ public class Team {
 			throw new IllegalArgumentException("Name cannot be null");
 		this.name = name;
 		this.game = game;
+		spawns = Other.getRandomFromArray(game.event.arena.tSpawns.values().toArray(new Spawns[0]));
+	}
+	/**
+	 * Creates a new team and loads it's options from config
+	 * @param game - the game that this team is part of
+	 * @param name - name of the team
+	 * @param config - team's options
+	 */
+	public Team(Game game, String name, ConfigurationSection config) {
+		this(game, name);
+		load(config);
 	}
 	/**
 	 * Loads team's options
@@ -52,6 +65,8 @@ public class Team {
 		setColor(config.getString("color"));
 		if (config.isString("rules"))
 			rules = game.plugin.rulesLoader.getRules(config.getString("rules"));
+		if (config.isString("messages"))
+			messages = game.plugin.messagesLoader.getMessages(config.getString("messages"));
 	}
 	/**
 	 * Sets team color
@@ -88,11 +103,21 @@ public class Team {
 	}
 	
 	void kickAll(boolean broadcast) {
-		for (IPlayer pd : players.toArray(new IPlayer[players.size()])) {
-			pd.leaveGame(false, false);
+		for (IPlayer p : players.toArray(new IPlayer[players.size()])) {
+			p.leaveGame(false, false);
 			if (broadcast)
 				;	// TODO
 		}
+	}
+	void respawnAll() {
+		if (game.active) {
+			Location[] s = spawns.getUniqueSpawns(players.size());
+			int c = 0;
+			for (IPlayer p : players)
+				p.respawn(s[c]);
+		} else
+			for (IPlayer p : players)
+				p.respawn();
 	}
 	
 	/**
@@ -147,6 +172,14 @@ public class Team {
 			return game.getEvent().messages;
 		else
 			return messages;
+	}
+	
+	/**
+	 * Returns the next spawn location for a player on the team.
+	 * @return a (re)spawn location
+	 */
+	public Location getSpawn() {
+		return spawns.getSpawn();
 	}
 	
 	/**

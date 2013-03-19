@@ -17,8 +17,10 @@ import com.impress.Infection.utilities.InvTools;
  * Contains player-specific data and methods
  */
 public class IPlayer {
-	/**A map containing all players by their name*/
-	final static HashMap<String, IPlayer> instances = new HashMap<String, IPlayer>();
+	/**
+	 * A map containing all players by their name
+	 */
+	private final static HashMap<String, IPlayer> instances = new HashMap<String, IPlayer>();
 	/**
 	 * Returns an {@link IPlayer} object for the given player. If the object was found in the plugin's player list it will generate a new one.
 	 * This method is guaranteed to return a non-null result
@@ -31,7 +33,7 @@ public class IPlayer {
 		else
 			return new IPlayer(player);
 	}
-	public IPlayer(Player player) {
+	private IPlayer(Player player) {
 		instances.put((this.player = player).getName(), this);
 	}
 	/**
@@ -41,6 +43,7 @@ public class IPlayer {
 	public void remove() {
 		if (isPlaying())
 			leaveGame(false, true);
+		resetCompassTarget();
 		instances.remove(player.getName());
 	}
 	
@@ -207,6 +210,21 @@ public class IPlayer {
 			TagAPIListener.refreshPlayer(player);
 	}
 	
+	void respawn() {
+		if (game.active)
+			respawn(team.getSpawn());
+		else
+			respawn(null);
+	}
+	void respawn(Location l) {
+		if (l == null) {
+			// TODO
+			player.teleport(oldLocation);
+		} else {
+			player.teleport(l);
+		}
+	}
+	
 	private void putTeamArmor() {
 		if (team.getRules().teamArmor) {
 			// TODO
@@ -242,7 +260,7 @@ public class IPlayer {
 	void refreshVisibility() {
 		for (Team team : game.teams.values().toArray(new Team[game.teams.size()]))
 			for (IPlayer player : team.players.toArray(new IPlayer[team.players.size()])) {
-				if (spectating) {
+				if (isSpectator()) {
 					this.player.showPlayer(player.player);
 					if (player.isSpectator())
 						player.player.showPlayer(this.player);

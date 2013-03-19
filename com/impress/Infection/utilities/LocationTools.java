@@ -25,7 +25,7 @@ public class LocationTools {
 		if (values.length < 3) throw new IllegalArgumentException("Not enough values");
 		if (values.length > 5) throw new IllegalArgumentException("Too many values");
 		double x, y, z;
-		float ya, p = 90;
+		float ya, p = 0;
 		try {
 			x = Double.parseDouble(values[0].trim());
 			y = Double.parseDouble(values[1].trim());

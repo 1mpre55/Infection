@@ -56,7 +56,8 @@ public class InvTools {
 	 * @throws ConfigurationMismatchException if "type" key is missing or contains an unknown item type.
 	 */
 	public static ItemStack loadItem(ConfigurationSection config) {
-		if (config == null) throw new NullPointerException("null config");
+		if (config == null)
+			throw new NullPointerException("null config");
 		Material m;
 		if (config.isInt(TYPE))
 			m = Material.getMaterial(config.getInt(TYPE));

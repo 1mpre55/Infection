@@ -1,4 +1,4 @@
-# Settings that apply to speciffic matches. Can be re-used for different games and/or arenas. Supports inheritance
+# Settings that apply to specific matches. Can be re-used for different games and/or arenas. Supports inheritance
 
 test-rules:
   parent: root-rules

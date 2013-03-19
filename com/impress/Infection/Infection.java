@@ -54,6 +54,7 @@ public class Infection extends JavaPlugin {
 	public static boolean tagAPI, disguiseCraft, mobDisguise;
 	
 	Map<String, Game> games;
+	Map<String, Game> activeGames;
 	Game mainGame;
 	
 	GamesLoader gamesLoader;
@@ -91,6 +92,7 @@ public class Infection extends JavaPlugin {
 			pm.registerEvents(new TagAPIListener(), this);
 		
 		games = new HashMap<String, Game>(8);
+		
 		getLogger().info(getName() + " enabled");
 	}
 	@Override
@@ -172,7 +174,7 @@ public class Infection extends JavaPlugin {
 			return join(sender, args);
 		else if (command.getName().equals("infleave"))
 			return leave(sender, args);
-		else if (command.getName().equalsIgnoreCase("igchangeteam"))
+		else if (command.getName().equalsIgnoreCase("infchangeteam"))
 			return changeTeam(sender, args);
 //		else if (command.getName().equals("infyell"))
 //			return yell(sender, args);
@@ -190,7 +192,7 @@ public class Infection extends JavaPlugin {
 		}
 		else if (args.length == 2 && args[1].equalsIgnoreCase("see")) {
 			if (sender instanceof Player) {
-				if (sender.hasPermission(basePerm + "kits.see.*") || sender.hasPermission(basePerm + "kits.see." + args[2])) {
+				if (sender.hasPermission(basePerm + "kits.see") || sender.hasPermission(basePerm + "kits.see." + args[2])) {
 					Kit kit = kitLoader.getKit(args[2]);
 					if (kit == null)
 						sender.sendMessage("kit not found");
@@ -218,7 +220,7 @@ public class Infection extends JavaPlugin {
 				sender.sendMessage("Only players can use this");
 		}
 		else if (args.length == 2 && args[1].equalsIgnoreCase("delete")) {
-			if (sender.hasPermission(basePerm + "kits.save") || sender.hasPermission(basePerm + "kits.save." + args[2])) {
+			if (sender.hasPermission(basePerm + "kits.delete") || sender.hasPermission(basePerm + "kits.delete." + args[2])) {
 				if (kitLoader.getKits().containsKey(args[2])) {
 					kitLoader.deleteKit(args[2]);
 					sender.sendMessage("Kit deleted");
@@ -254,8 +256,8 @@ public class Infection extends JavaPlugin {
 				}
 			
 			try {
-				if (args.length > 0)
-					game.playerJoin(IPlayer.getIPlayer((Player)sender), args[0]);
+				if (args.length > 1)
+					game.playerJoin(IPlayer.getIPlayer((Player)sender), args[1]);
 				else
 					game.playerJoin(IPlayer.getIPlayer((Player)sender), null);
 			} catch (TeamNotFoundException | AlreadyPlayingException e) {
@@ -313,5 +315,37 @@ public class Infection extends JavaPlugin {
 			}
 		} else sender.sendMessage("Only players can switch teams");
 		return true;
+	}
+	private boolean admin(CommandSender sender, String[] args) {
+		// Could use a switch(String) statement when don't need to support Java 6 anymore
+		final String help = ChatColor.DARK_RED + "game " + ChatColor.RED + "<args> " + ChatColor.BLUE + "- commands related to games";
+		final String gameHelp = ChatColor.DARK_RED + "game start " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- force start the game\n" +
+								ChatColor.DARK_RED + "game end " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- force end the game\n";
+		if (args.length < 1)
+			sender.sendMessage(help);
+		else if (args[0].equalsIgnoreCase("game")) {
+			Game g;
+			if (args.length < 3)
+				sender.sendMessage(gameHelp);
+			else if (args[1].equalsIgnoreCase("start")) {
+				if ((g = findGame(sender, args[2])) != null)
+					g.startEvent();
+			} else if (args[1].equalsIgnoreCase("end")) {
+				if ((g = findGame(sender, args[2])) != null)
+					g.endEvent();
+			} else
+				sender.sendMessage(gameHelp);
+		} else
+			sender.sendMessage(help);
+		return true;
+	}
+	private Game findGame(CommandSender sender, String game) {
+		Game g = games.get(game);
+		if (g == null) {
+			if (sender != null)
+				sender.sendMessage("Game " + game + " was not found");
+			return null;
+		} else
+			return g;
 	}
 }

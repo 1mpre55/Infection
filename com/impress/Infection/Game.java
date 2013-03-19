@@ -30,6 +30,7 @@ public class Game {
 	boolean sequential; //TODO change to enum?
 	boolean loop;
 	
+	boolean chooseNewEvent;
 	Event event;
 	
 	int players;
@@ -51,6 +52,8 @@ public class Game {
 		spectators = new Spectators(this);
 		teams = new HashMap<String, Team>();
 		events = new ArrayList<Event>();
+		event = null;
+		chooseNewEvent = true;
 	}
 	/**
 	 * Creates a Game object and loads its options from {@link loadFrom}
@@ -107,6 +110,27 @@ public class Game {
 		Messages messages;
 	}
 	
+	public void startEvent() {
+		if (active)
+			return;
+		
+		if (event == null || chooseNewEvent)
+			chooseEvent(!sequential);
+		active = true;
+		for (Team team : teams.values())
+			team.respawnAll();
+	}
+	
+	public void endEvent() {
+		if (!active)
+			return;
+		
+		active = false;
+		chooseNewEvent = true;
+		for (Team team : teams.values())
+			team.respawnAll();
+	}
+	
 	/**
 	 * Called when a player uses a join command. This methods checks if the player is allowed to join.
 	 * To bypass the checks simply call player.joinGame()
@@ -116,7 +140,6 @@ public class Game {
 	 * team not found, player is already playing a game, no permission to ignore team balance or unable to join after the game started.
 	 * Use exception.getMessage() for a player-friendly reason that they're unable to join.
 	 */
-
 	public void playerJoin(IPlayer player, String team) throws GameException {
 		if (player == null)
 			throw new IllegalArgumentException("Null player");
