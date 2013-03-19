@@ -1,11 +1,14 @@
 package com.impress.Infection.config;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.impress.Infection.data.Arena;
+import com.impress.Infection.exceptions.ConfigurationMismatchException;
 
 public class ArenaLoader extends ConfigManager {
 	private final Logger log;
@@ -36,7 +39,18 @@ public class ArenaLoader extends ConfigManager {
 	
 	@Override
 	public void load() {
-		// TODO
+		FileConfiguration config = getConfig();
+		Set<String> arenaNames = config.getKeys(false);
+		for (String arena : arenaNames)
+			if (!arenas.containsKey(arena))
+			try {
+				Arena a = new Arena(arena);
+				a.load(getConfigurationSection(config, arena));
+				arenas.put(arena, a);
+			} catch (ConfigurationMismatchException e) {
+				log.warning("Error loading arena \"" + arena + "\":" + e.getMessage());
+			}
+		else log.warning("Duplicate map \"" + arena + "\" in " + fileName + ", new map ignored");
 	}
 	@Override
 	public void save() {

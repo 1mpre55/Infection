@@ -1,22 +1,30 @@
 package com.impress.Infection.data;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import com.impress.Infection.Game;
+import com.impress.Infection.exceptions.ConfigurationMismatchException;
 
 public class Arena {
-	public String name;
+	private final static String worldO = "world",
+								spawnsO = "spawns";
+	
+	public final String name;
 	
 	public World world;
 	
-	public int[][] dimentions;
+	public int[][] dimensions;
 	
-	public List<Spawns> tSpawns;
+	public HashMap<String, Spawns> tSpawns;
 	
 	public List<Location> flags;
 	
@@ -27,6 +35,29 @@ public class Arena {
 	public Game currentGame;
 	
 	//public String backup;
+	
+	class Team {
+		
+	}
+	
+	public void load(ConfigurationSection config) throws ConfigurationMismatchException {
+		if (config.isString(worldO))
+			if ((world = Bukkit.getServer().getWorld(config.getString(worldO))) == null)
+				throw new ConfigurationMismatchException("World " + config.getString(worldO) + " was not found");
+		if (world == null)
+			world = Bukkit.getWorlds().get(0);
+		
+		// TODO load dimensions
+		
+		tSpawns = new HashMap<String, Spawns>();
+		if (config.isConfigurationSection(spawnsO)) {
+			ConfigurationSection c = config.getConfigurationSection(spawnsO);
+			for (String team : c.getKeys(false))
+				if (c.isConfigurationSection(team))
+					tSpawns.put(team, new RandomSpawns(c.getConfigurationSection(team), world));
+		}
+		flags = new ArrayList<Location>();
+	}
 	
 	/**
 	 * Checks if this arena can support a game with specified options and verifies that all required data is valid.
@@ -69,7 +100,8 @@ public class Arena {
 	/**
 	 * Creates a new Arena and puts it in the plugin's arena list
 	 */
-	public Arena() {
+	public Arena(String name) {
+		this.name = name;
 		instances.add(this);
 	}
 	/**
@@ -85,10 +117,10 @@ public class Arena {
 	 * @return - true if the location is in arena's area, false otherwise.
 	 */
 	boolean isInBounds(Location loc) {
-		if (dimentions == null) return true;
-		return (loc.getX() > dimentions[0][0] && loc.getX() < dimentions[0][1] &&
-				loc.getY() > dimentions[1][0] && loc.getY() < dimentions[1][1] &&
-				loc.getZ() > dimentions[2][0] && loc.getZ() < dimentions[2][1]);
+		if (dimensions == null) return true;
+		return (loc.getX() > dimensions[0][0] && loc.getX() < dimensions[0][1] &&
+				loc.getY() > dimensions[1][0] && loc.getY() < dimensions[1][1] &&
+				loc.getZ() > dimensions[2][0] && loc.getZ() < dimensions[2][1]);
 	}
 	/**
 	 * If the given coordinates (or player's location if <b>from</b> is null) is outside the arena, it will be moved to the closest point within the arena
@@ -104,12 +136,12 @@ public class Arena {
 				return;
 			else from = player.getLocation();
 		if (isInBounds(from)) return;
-		if (from.getX() < dimentions[0][0]) from.setX(dimentions[0][0]);
-		else if (from.getX() > dimentions[0][1]) from.setX(dimentions[0][1]);
-		if (from.getY() < dimentions[1][0]) from.setY(dimentions[1][0]);
-		else if (from.getX() > dimentions[1][1]) from.setY(dimentions[1][1]);
-		if (from.getZ() < dimentions[2][0]) from.setZ(dimentions[2][0]);
-		else if (from.getX() > dimentions[2][1]) from.setZ(dimentions[2][1]);
+		if (from.getX() < dimensions[0][0]) from.setX(dimensions[0][0]);
+		else if (from.getX() > dimensions[0][1]) from.setX(dimensions[0][1]);
+		if (from.getY() < dimensions[1][0]) from.setY(dimensions[1][0]);
+		else if (from.getX() > dimensions[1][1]) from.setY(dimensions[1][1]);
+		if (from.getZ() < dimensions[2][0]) from.setZ(dimensions[2][0]);
+		else if (from.getX() > dimensions[2][1]) from.setZ(dimensions[2][1]);
 		if (player != null)
 			player.teleport(from);
 	}
@@ -125,7 +157,7 @@ public class Arena {
 	 */
 	public static Arena getFromLocation(Location loc) {
 		for (Arena arena : instances.toArray(new Arena[0]))
-			if (arena.dimentions != null && arena.isInBounds(loc))
+			if (arena.dimensions != null && arena.isInBounds(loc))
 				return arena;
 		return null;
 	}
