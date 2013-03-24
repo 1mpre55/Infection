@@ -359,6 +359,7 @@ public class Infection extends JavaPlugin {
 			} else if (args[1].equalsIgnoreCase("unload")) {
 				if ((g = findGame(sender, args[2])) != null) {
 					games.remove(g.name);
+					g.endEvent();
 					sender.sendMessage("Game " + g.name + " was unloaded");
 				}
 			} else if (args[1].equalsIgnoreCase("list")) {
