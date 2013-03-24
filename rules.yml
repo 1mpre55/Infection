@@ -2,6 +2,8 @@
 
 test-rules:
   parent: root-rules
+  allow-changing-team: true
+  keep-inventory: false
 
 small-map-rules:
   parent: root-rules
@@ -10,3 +12,10 @@ small-map-rules:
 root-rules:
   friendly-fire: on
   time-limit: 600
+  allow-join-after-start: true
+  allow-changing-team: false
+  clear-items-when-leaving: false
+  use-team-armor:true
+  keep-inventory: true
+  remove-death-drops: false
+  team-color-nametags: true

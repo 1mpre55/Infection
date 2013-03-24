@@ -13,6 +13,7 @@ import com.impress.Infection.exceptions.ConfigurationMissingKeysException;
  * @author 1mpre55
  */
 public class Rules implements Cloneable {
+	@SuppressWarnings("unused")
 	private static final String parentO			 = "parent",
 							   friendlyFireO	 = "friendly-fire",
 							   timeLimitO		 = "time-limit",

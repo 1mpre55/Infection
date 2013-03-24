@@ -1,7 +1,9 @@
 package com.impress.Infection;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -54,7 +56,7 @@ public class Infection extends JavaPlugin {
 	public static boolean tagAPI, disguiseCraft, mobDisguise;
 	
 	Map<String, Game> games;
-	Map<String, Game> activeGames;
+	List<Game> activeGames;
 	Game mainGame;
 	
 	GamesLoader gamesLoader;
@@ -66,13 +68,19 @@ public class Infection extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
+		saveDefaultConfig();
 		FileConfiguration config = getConfig();
 		
 		kitLoader = new KitLoader(this, "kits.yml", getLogger());
+		kitLoader.saveDefaultYaml();
 		messagesLoader = new MessagesLoader(this, "lang.yml", getLogger());
+		messagesLoader.saveDefaultYaml();
 		arenaLoader = new ArenaLoader(this, "arenas.yml", getLogger());
+		arenaLoader.saveDefaultYaml();
 		rulesLoader = new RulesLoader(this, "rules.yml", getLogger());
+		rulesLoader.saveDefaultYaml();
 		gamesLoader = new GamesLoader(this, "games.yml", getLogger());
+		gamesLoader.saveDefaultYaml();
 		kitLoader.load();
 		messagesLoader.load();
 		arenaLoader.load();
@@ -92,6 +100,7 @@ public class Infection extends JavaPlugin {
 			pm.registerEvents(new TagAPIListener(), this);
 		
 		games = new HashMap<String, Game>(8);
+		activeGames = new ArrayList<Game>();
 		
 		getLogger().info(getName() + " enabled");
 	}
@@ -159,6 +168,9 @@ public class Infection extends JavaPlugin {
 				if (args[0].equalsIgnoreCase("changeteam")) {
 					return changeTeam(sender, Arrays.copyOfRange(args, 1, args.length));
 				}
+				if (args[0].equalsIgnoreCase("admin")) {
+					return admin(sender, Arrays.copyOfRange(args, 1, args.length));
+				}
 //				if (args[0].equalsIgnoreCase("yell")) {
 //					return yell(sender, Arrays.copyOfRange(args, 1, args.length));
 //				}
@@ -176,6 +188,8 @@ public class Infection extends JavaPlugin {
 			return leave(sender, args);
 		else if (command.getName().equalsIgnoreCase("infchangeteam"))
 			return changeTeam(sender, args);
+		else if (command.getName().equalsIgnoreCase("infadmin"))
+			return admin(sender, args);
 //		else if (command.getName().equals("infyell"))
 //			return yell(sender, args);
 //		else if (command.getName().equalsIgnoreCase("infstats"))
@@ -319,20 +333,39 @@ public class Infection extends JavaPlugin {
 	private boolean admin(CommandSender sender, String[] args) {
 		// Could use a switch(String) statement when don't need to support Java 6 anymore
 		final String help = ChatColor.DARK_RED + "game " + ChatColor.RED + "<args> " + ChatColor.BLUE + "- commands related to games";
-		final String gameHelp = ChatColor.DARK_RED + "game start " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- force start the game\n" +
-								ChatColor.DARK_RED + "game end " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- force end the game\n";
+		final String gameHelp = ChatColor.DARK_RED + "game load " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- load the game\n" +
+								ChatColor.DARK_RED + "game start " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- start game's next event\n" +
+								ChatColor.DARK_RED + "game end " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- end game's current event\n" +
+								ChatColor.DARK_RED + "game unload " + ChatColor.RED + "<game> " + ChatColor.BLUE + "- unload the game ending it's current event\n" +
+								ChatColor.DARK_RED + "game list " + ChatColor.BLUE + "- list all loaded games";
 		if (args.length < 1)
 			sender.sendMessage(help);
 		else if (args[0].equalsIgnoreCase("game")) {
 			Game g;
-			if (args.length < 3)
+			if (args.length < 2)
 				sender.sendMessage(gameHelp);
-			else if (args[1].equalsIgnoreCase("start")) {
+			else if (args.length > 2 && args[1].equalsIgnoreCase("load")) {
+				if ((g = gamesLoader.getGame(args[2])) != null) {
+					games.put(g.name, g);
+					sender.sendMessage("Game " + g.name + " was loaded");
+				} else
+					sender.sendMessage("Game " + args[2] + " was not found");
+			} else if (args.length > 2 && args[1].equalsIgnoreCase("start")) {
 				if ((g = findGame(sender, args[2])) != null)
 					g.startEvent();
-			} else if (args[1].equalsIgnoreCase("end")) {
+			} else if (args.length > 2 && args[1].equalsIgnoreCase("end")) {
 				if ((g = findGame(sender, args[2])) != null)
 					g.endEvent();
+			} else if (args[1].equalsIgnoreCase("unload")) {
+				if ((g = findGame(sender, args[2])) != null) {
+					games.remove(g.name);
+					sender.sendMessage("Game " + g.name + " was unloaded");
+				}
+			} else if (args[1].equalsIgnoreCase("list")) {
+				if (gamesLoader.getAllGames().isEmpty())
+					sender.sendMessage("No games found");
+				else
+					sender.sendMessage(TextTools.separateWithCommas(gamesLoader.getAllGames().keySet()));
 			} else
 				sender.sendMessage(gameHelp);
 		} else
@@ -343,7 +376,10 @@ public class Infection extends JavaPlugin {
 		Game g = games.get(game);
 		if (g == null) {
 			if (sender != null)
-				sender.sendMessage("Game " + game + " was not found");
+				if (sender.hasPermission(basePerm + "seeunloadedgames") && gamesLoader.getAllGames().containsKey(game))
+					sender.sendMessage("Game " + game + " is not loaded");
+				else
+					sender.sendMessage("Game " + game + " was not found");
 			return null;
 		} else
 			return g;

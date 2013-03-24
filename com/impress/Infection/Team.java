@@ -45,7 +45,6 @@ public class Team {
 			throw new IllegalArgumentException("Name cannot be null");
 		this.name = name;
 		this.game = game;
-		spawns = Other.getRandomFromArray(game.event.arena.tSpawns.values().toArray(new Spawns[0]));
 	}
 	/**
 	 * Creates a new team and loads it's options from config
@@ -110,7 +109,10 @@ public class Team {
 		}
 	}
 	void respawnAll() {
-		if (game.active) {
+		// temp code
+		spawns = Other.getRandomFromArray(game.event.arena.tSpawns.values().toArray(new Spawns[0]));
+		
+		if (game.active && spawns != null) {
 			Location[] s = spawns.getUniqueSpawns(players.size());
 			int c = 0;
 			for (IPlayer p : players)
@@ -192,11 +194,11 @@ public class Team {
 	static Team createByType(String type, Game game, String name) {
 		if (type == null || type.equalsIgnoreCase("default") || type.equalsIgnoreCase("regular"))
 			return new Team(game, name);
-		if (type.equalsIgnoreCase("spectators"))
+		if (type.equalsIgnoreCase("spectators") || type.equalsIgnoreCase("spectator"))
 			return new Spectators(game, name);
-		if (type.equalsIgnoreCase("zombies"))
+		if (type.equalsIgnoreCase("zombies") || type.equalsIgnoreCase("zombie"))
 			return new Zombies(game, name);
-		if (type.equalsIgnoreCase("survivors"))
+		if (type.equalsIgnoreCase("survivors") || type.equalsIgnoreCase("survivor"))
 			return new Survivors(game, name);
 		return null;
 	}

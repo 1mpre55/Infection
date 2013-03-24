@@ -11,33 +11,38 @@ commands:
     aliases:
     - inf
   infjoin:
-  	description: Infection's join game command. Equivalent to /inf join
+    description: Infection's join game command. Equivalent to /inf join
     usage: /<command> [game] [team]
     aliases:
     - join
   infleave:
-  	description: Infection's leave game command. Equivalent to /inf leave
+    description: Infection's leave game command. Equivalent to /inf leave
     usage: /<command>
     aliases:
     - leave
   infchangeteam:
-  	description: Infection's change team command. Equivalent to /inf changeteam
+    description: Infection's change team command. Equivalent to /inf changeteam
     usage: /<command> [team]
     aliases:
     - changeteam
   infadmin:
-  	description: Infection's administrative command. Equivalent to /inf admin
+    description: Infection's administrative command. Equivalent to /inf admin
     usage: /<command> [args...]
     aliases:
     - admin
 permissions:
   infection.*:
     children:
-      infection.something: true
+      infection.join: true
+      infection.joinafterstart: true
+      infection.jointeam: true
+      infection.changeteam: true
+      infection.ignore.teambalance: true
+      infection.kits: true
     description: Gives all Infection permissions
     default: false
-  infection.join
-  	default: true
+  infection.join:
+    default: true
     description: Allows player to join any game
   infection.joinafterstart:
     description: Allows player to join any game after it started

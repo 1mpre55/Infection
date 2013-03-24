@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.impress.Infection.data.Arena;
@@ -100,6 +101,8 @@ public class Game {
 			for (String teamName : config.getConfigurationSection("teams").getKeys(false).toArray(new String[0])) {
 				ConfigurationSection cs = config.getConfigurationSection("teams." + teamName);
 				Team team = Team.createByType(cs.getString("type"), this, cs.getString("name", teamName));
+				if (team == null)
+					team = new Team(this, cs.getString("name", teamName));
 				team.load(cs);
 				teams.put(team.name.toLowerCase(), team);
 			}
@@ -117,6 +120,9 @@ public class Game {
 		if (event == null || chooseNewEvent)
 			chooseEvent(!sequential);
 		active = true;
+		plugin.activeGames.add(this);
+		Bukkit.broadcastMessage("[DEBUG] Game " + name + ": next event started");
+		
 		for (Team team : teams.values())
 			team.respawnAll();
 	}
@@ -126,7 +132,10 @@ public class Game {
 			return;
 		
 		active = false;
+		plugin.activeGames.remove(this);
+		Bukkit.broadcastMessage("[DEBUG] Game " + name + ": event ended");
 		chooseNewEvent = true;
+		
 		for (Team team : teams.values())
 			team.respawnAll();
 	}

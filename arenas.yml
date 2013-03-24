@@ -16,3 +16,15 @@ test-arena:
   
   # Protects the map from being modified by players when no game is present. When a game is using this map this gets overriden by that game's settings
   protected: true
+  
+  spawns:
+    test1:
+      locations:
+      - 147.0, 104.0, 193.0
+      - 149.0, 104.0, 191.0
+      - 149.0, 104.0, 195.0
+    test2:
+      locations:
+      - 131.0, 104.0, 193.0
+      - 129.0, 104.0, 191.0
+      - 129.1, 105.21, 195.19283

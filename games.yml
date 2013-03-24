@@ -15,7 +15,7 @@ test-game:
       # Color of the team. Used for dyed armor, color nametags, chat messages and broadcasts.
       color: none
       # Current types: default (regular), spectators, zombies and survivors. 
-      type: zombie
+      type: zombies
       # Disguise as a zombie. THIS ONLY AFFECTS ZOMBIE TYPE TEAMS
       disguise: true
     Survivors:

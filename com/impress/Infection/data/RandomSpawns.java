@@ -16,6 +16,7 @@ import com.impress.Infection.utilities.Other;
  * @author 1mpre55
  */
 public class RandomSpawns implements Spawns {
+	private static final String spawnsO = "locations";
 	private List<Location> spawns;
 	private final World world;
 	/**
@@ -35,8 +36,8 @@ public class RandomSpawns implements Spawns {
 	@Override
 	public void load(ConfigurationSection config) {
 		spawns = new ArrayList<Location>();
-		if (config.isList("spawns"))
-			for (String spawn : config.getStringList("spawns"))
+		if (config.isList(spawnsO))
+			for (String spawn : config.getStringList(spawnsO))
 				// TODO surround with try-catch
 				spawns.add(LocationTools.locationFromCSVString(spawn, world));
 	}

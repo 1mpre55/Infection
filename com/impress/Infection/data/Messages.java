@@ -2,6 +2,7 @@ package com.impress.Infection.data;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -93,15 +94,17 @@ public class Messages {
 		Field key;
 		for (Field field : getClass().getFields())
 			if (field.getType() == String.class && Modifier.isPublic(field.getModifiers())
-					&& (key = getClass().getField(field.getName() + 'O')).getType() == String.class
+					&& (key = getClass().getDeclaredField(field.getName() + 'O')).getType() == String.class
 					&& Modifier.isStatic(key.getModifiers())) {
 				field.set(this, config.getString((String)key.get(null)));
 			}
 		
-		if (config.isConfigurationSection(bEndTimerO))
-			for (String sec : config.getConfigurationSection(bEndTimerO).getKeys(false).toArray(new String[0]))
+		if (config.isConfigurationSection(bEndTimerO)) {
+			bEndTimer = new HashMap<Integer, String>();
+			for (String sec : config.getConfigurationSection(bEndTimerO).getKeys(false))
 				try {
 					bEndTimer.put(Integer.parseInt(sec), config.getString(bEndTimerO + '.' + sec));
 				} catch (NumberFormatException e) {}
+		}
 	}
 }
