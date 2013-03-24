@@ -1,0 +1,15 @@
+# Infection kits file
+
+random-kit:
+  food:
+    type: COOKED_BEEF
+    amount: 48
+  sword:
+    type: DIAMOND_SWORD
+    damage: 123
+    name: Slayer
+    lore:
+    - this sword slays
+    - mobs and players
+    enchantments:
+    - KNOCKBACK:9001
