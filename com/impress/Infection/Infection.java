@@ -7,15 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -123,41 +119,6 @@ public class Infection extends JavaPlugin {
 			if (args.length > 0) {
 				if (args[0].equalsIgnoreCase("kit")) {
 					return kitCommand(sender, Arrays.copyOfRange(args, 1, args.length));
-				}
-				// Debug armor
-				if (args[0].equalsIgnoreCase("armor")) {
-					if (!(sender instanceof Player)) sender.sendMessage("must be a player");
-					else if (args.length < 2) sender.sendMessage("please specify color");
-					else {
-						Material material;
-						args[2] = args[2].toLowerCase();
-						switch(args[2]) {
-						case "chestplate": material = Material.LEATHER_CHESTPLATE; break;
-						case "helmet": material = Material.LEATHER_HELMET; break;
-						case "boots": material = Material.LEATHER_BOOTS; break;
-						case "leggings": material = Material.LEATHER_LEGGINGS; break;
-						default: sender.sendMessage("Unknown armor type"); return true;
-						}
-						Color color;
-						args[1] = args[1].toLowerCase();
-						switch(args[1]) {
-						case "red": color = Color.RED; break;
-						case "blue": color = Color.BLUE; break;
-						case "black": color = Color.BLACK; break;
-						case "gray": color = Color.GRAY; break;
-						case "green": color = Color.GREEN; break;
-						case "orange": color = Color.ORANGE; break;
-						case "yellow": color = Color.YELLOW; break;
-						case "purple": color = Color.PURPLE; break;
-						case "white": color = Color.WHITE; break;
-						default: color = Color.SILVER;
-						}
-						LeatherArmorMeta lim = (LeatherArmorMeta)getServer().getItemFactory().getItemMeta(material);
-						lim.setColor(color);
-						ItemStack item = new ItemStack(material);
-						((Player)sender).getInventory().addItem(item);
-					}
-					return true;
 				}
 				if (args[0].equalsIgnoreCase("join")) {
 					return join(sender, Arrays.copyOfRange(args, 1, args.length));
