@@ -41,7 +41,7 @@ public class MessagesLoader extends ConfigManager {
 		try {
 			for (String name : config.getKeys(false).toArray(new String[0]))
 				messages.put(name, new Messages(getConfigurationSection(config, name)));
-		} catch (ReflectiveOperationException e) {
+		} catch (Exception e) {
 			log.warning("Internal error occured while loading messages");
 			e.printStackTrace();
 		}

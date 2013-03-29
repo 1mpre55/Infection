@@ -235,7 +235,9 @@ public class Infection extends JavaPlugin {
 					game.playerJoin(IPlayer.getIPlayer((Player)sender), args[1]);
 				else
 					game.playerJoin(IPlayer.getIPlayer((Player)sender), null);
-			} catch (TeamNotFoundException | AlreadyPlayingException e) {
+			} catch (TeamNotFoundException e) {
+				sender.sendMessage(e.getMessage());
+			} catch (AlreadyPlayingException e) {
 				sender.sendMessage(e.getMessage());
 			} catch (GameFullException e) {
 				sender.sendMessage("Game full");

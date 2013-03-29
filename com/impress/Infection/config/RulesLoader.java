@@ -51,7 +51,7 @@ public class RulesLoader extends ConfigManager {
 			if (!rules.containsKey(rulesName))
 				try {
 					loadRules(config, rulesName, parentStack);
-				} catch (GameException | NullPointerException e) {
+				} catch (GameException e) {
 					log.warning(e.getMessage() + " Rules " + rulesName + " failed to load");
 					e.printStackTrace();
 					parentStack.clear();

@@ -80,17 +80,24 @@ public class Messages {
 	/**
 	 * Constructs new Messages object loading messages from <b>config</b>
 	 * @param config - {@link ConfigurationSection} containing the messages
-	 * @throws ReflectiveOperationException if an internal error occurs
+	 * @throws IllegalAccessException Reflection exception
+	 * @throws NoSuchFieldException Reflection exception
+	 * @throws IllegalArgumentException Reflection exception
+	 * @throws SecurityException Reflection exception
 	 */
-	public Messages(ConfigurationSection config) throws ReflectiveOperationException {
+	public Messages(ConfigurationSection config) throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
 		load(config);
 	}
 	/**
 	 * Loads the messages from <b>config</b>. This uses reflections to load the options
 	 * @param config - Configuration section to load the messages from
+	 * @throws IllegalAccessException Reflection exception
+	 * @throws NoSuchFieldException Reflection exception
+	 * @throws IllegalArgumentException Reflection exception
+	 * @throws SecurityException Reflection exception
 	 * @throws ReflectiveOperationException if an internal error occurs. This is most likely caused by a missing or misnamed field
 	 */
-	public void load(ConfigurationSection config) throws ReflectiveOperationException {
+	public void load(ConfigurationSection config) throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException  {
 		Field key;
 		for (Field field : getClass().getFields())
 			if (field.getType() == String.class && Modifier.isPublic(field.getModifiers())
