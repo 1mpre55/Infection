@@ -1,15 +1,22 @@
 # Infection kits file
 
-random-kit:
-  food:
-    type: COOKED_BEEF
-    amount: 48
+energysword:
   sword:
     type: DIAMOND_SWORD
-    damage: 123
-    name: Slayer
+    name: Energy Sword
     lore:
-    - this sword slays
-    - mobs and players
+    - weapon of most skilled Sangheili
     enchantments:
-    - KNOCKBACK:9001
+    - SHARPNESS:1000
+shotgun:
+  bow:
+    type: BOW
+    name: Shotgun
+    lore:
+    - M90 Close Assault Weapon System
+zombie:
+  40:
+    type: LEATHER_BOOTS
+    enchantments:
+    - FEATHERFALL:10000
+    - UNBREAKING:10000
