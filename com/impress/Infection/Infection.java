@@ -69,7 +69,7 @@ public class Infection extends JavaPlugin {
 		
 		kitLoader = new KitLoader(this, "kits.yml", getLogger());
 		kitLoader.saveDefaultYaml();
-		messagesLoader = new MessagesLoader(this, "lang.yml", getLogger());
+		messagesLoader = new MessagesLoader(this, config.getString("messages-file", "messages.yml"), getLogger());
 		messagesLoader.saveDefaultYaml();
 		arenaLoader = new ArenaLoader(this, "arenas.yml", getLogger());
 		arenaLoader.saveDefaultYaml();
@@ -86,10 +86,9 @@ public class Infection extends JavaPlugin {
 		defaultMessages = messagesLoader.getMessages(config.getString("default-messages"));
 		
 		PluginManager pm = getServer().getPluginManager();
-		tagAPI = pm.isPluginEnabled("TagAPI");
-		disguiseCraft = pm.isPluginEnabled("DisguiseCraft");
-		if (!disguiseCraft)
-			mobDisguise = pm.isPluginEnabled("MobDisguise");
+		tagAPI = config.getBoolean("hooks.TagAPI", true) && pm.isPluginEnabled("TagAPI");
+		disguiseCraft = config.getBoolean("hooks.DisguiseCraft", true) && pm.isPluginEnabled("DisguiseCraft");
+		mobDisguise = !disguiseCraft && config.getBoolean("hooks.MobDisguise", true) && pm.isPluginEnabled("MobDisguise");
 		
 		pm.registerEvents(new MainListener(), this);
 		if (tagAPI)

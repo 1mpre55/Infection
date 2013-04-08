@@ -2,3 +2,8 @@
 # This is the only configuration file that will not be modified by the plugin
 
 default-messages: test-messages
+hooks:
+  TagAPI: true
+  DisguiseCraft: true
+  MobDisguise: false
+messages-file: messages.yml
