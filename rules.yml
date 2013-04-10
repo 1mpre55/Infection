@@ -19,3 +19,5 @@ root-rules:
   keep-inventory: true
   remove-death-drops: false
   team-color-nametags: true
+infection:
+  parent: root-rules

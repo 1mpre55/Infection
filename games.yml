@@ -2,21 +2,46 @@
 # Possible rename 'game' to: battle, event, competition, contest, ect.
 
 test-game:
-  arenas:
-    # Format: - arena:rules:[messages]
+  events:
+    # Format: - arena:rules[:messages]
   - test-arena:test-rules:test-messages
-  arena-order: SEQUENTIAL
+  # Determines how the game will choose next event. Can be SEQUENTIAL or RANDOM
+  event-order: SEQUENTIAL
+  # Whether or not the game will loop through the events. This is ignored if event-order is RANDOM.
   loop: true
   
   teams:
-    Zombies:
+    TestTeam1:
       # Use "name:" if the name must contain special characters.
-      name: '#team:Zombie.'
+      name: '#team:Test.'
       # Color of the team. Used for dyed armor, color nametags, chat messages and broadcasts.
-      color: none
+      color: yellow
       # Current types: default (regular), spectators, zombies and survivors. 
-      type: zombies
+      type: default
       # Disguise as a zombie. THIS ONLY AFFECTS ZOMBIE TYPE TEAMS
       disguise: true
+      # Prevents direct damage from this team to other teams
+      prevent-damage-to:
+      - Zombies
+      - Survivors
+      # Disables fall damage for this team
+      disable-fall-damage: true
+      # Links this team to a specific spawn in an arena. If a spawn wasn't specified for the current arena, a random spawn will be chosen. 
+      spawns:
+        test-arena: test-spawn1
+      # Possibly add this later. This will make the team prefer this spawn when choosing one randomly.
+      # default-spawn: test-spawn
+infection:
+  events:
+  - infection1:inf-default:infection
+  - infection2:inf-hardcore:infection
+  event-order: RANDOM
+  loop: true
+  teams:
+    Zombies:
+      type: zombies
     Survivors:
       type: survivors
+      spawns:
+        infection1: survivors
+        infection2: survivors

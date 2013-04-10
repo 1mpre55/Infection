@@ -1,5 +1,6 @@
 # Global settings
 # This is the only configuration file that will not be modified by the plugin
+# Some options will need to be grouped later
 
 default-messages: test-messages
 hooks:
@@ -7,3 +8,5 @@ hooks:
   DisguiseCraft: true
   MobDisguise: false
 messages-file: messages.yml
+# Rounds location coordinates when using command
+round-coordinates: false

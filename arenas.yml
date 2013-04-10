@@ -1,18 +1,10 @@
 # Defines arenas
 
 test-arena:
-  world: testWorld
+  world: world
   cuboid:
     p1: 151, 102, 200
     p2: 126, 107, 183
-  
-  # WIP - comments welcome
-  zombie-spawns: RANDOM
-  survivor-spawns:
-  - 147, 104, 193, 180, 90
-  - 149, 104, 191, 4
-  - 149, 104, 195
-# - x, y, z, yaw, pitch
   
   # Protects the map from being modified by players when no game is present. When a game is using this map this gets overriden by that game's settings
   protected: true
@@ -20,11 +12,47 @@ test-arena:
   spawns:
     test1:
       locations:
-      - 147.0, 104.0, 193.0
-      - 149.0, 104.0, 191.0
-      - 149.0, 104.0, 195.0
+      # - x, y, z[, yaw][, pitch]
+      - 147, 104, 193
+      - 149, 104, 191
+      - 149, 104, 195
     test2:
+      # type of the spawns. Defaults to LOCATIONS
+      type: LOCATIONS
       locations:
-      - 131.0, 104.0, 193.0
-      - 129.0, 104.0, 191.0
-      - 129.1, 105.21, 195.19283
+      - 131, 104, 193, 90
+      - 129.0, 104.0, 191.0, 0.0, 0.0
+      - 129.1, 105.21, 195.19283, 63.849, -14.825
+infection1:
+  world: world
+  cuboid:
+    p1: -10, 1, -10
+    p2: 10, 6, 10
+  spawns:
+    zombies:
+      type: CUBOID
+    survivors:
+      type: LOCATIONS
+      locations:
+      - 0, 1, 0
+      - 1, 1, 0
+      - -1, 1, 0
+infection2:
+  world: world
+  cuboid:
+    p1: 0, 64, 0
+    p2: 50, 69, 50
+  spawns:
+    zombies:
+      type: AREA
+      area:
+        p1: 10, 64, 10
+        p2: 40, 69, 40
+      spawn-in-air: false
+    survivors:
+      type: LOCATIONS
+      locations:
+      - 1, 64, 1
+      - 1, 67, 49
+      - 49, 69, 1
+      - 49, 65, 49
