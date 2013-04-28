@@ -6,7 +6,7 @@ test-arena:
     p1: 151, 102, 200
     p2: 126, 107, 183
   
-  # Protects the map from being modified by players when no game is present. When a game is using this map this gets overriden by that game's settings
+  # Protects the map from being modified by players when no game is present. When a game is using this map this gets overridden by that game's settings
   protected: true
   
   spawns:

@@ -1,9 +1,9 @@
 name: Infection
-version: 0.1
+version: 0.2
 main: com.impress.Infection.Infection
 description: Infection gamemode
 author: 1mpre55
-softdepend: [TagAPI, DisguiseCraft]
+softdepend: [TagAPI, WorldEdit, DisguiseCraft, MobDisguise]
 commands:
   infection:
     description: Main command.

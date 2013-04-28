@@ -2,41 +2,44 @@
 
 package com.impress.Infection.data;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+import com.impress.Infection.exceptions.CircularInheritanceException;
 import com.impress.Infection.exceptions.ConfigurationMissingKeysException;
 
 /**
  * Contains game rules
  * @author 1mpre55
  */
-public class Rules implements Cloneable {
-	@SuppressWarnings("unused")
-	private static final String parentO			 = "parent",
-							   friendlyFireO	 = "friendly-fire",
-							   timeLimitO		 = "time-limit",
-							   joinAfterStartO	 = "allow-join-after-start",
-							   allowTeamChangeO	 = "allow-changing-team",
-							   clearInvOnLeaveO	 = "clear-items-when-leaving",
-							   teamArmorO		 = "use-team-armor",
-							   keepInventoryO	 = "keep-inventory",
-							   removeDropsO		 = "remove-death-drops",
-							   teamColorNametagO = "team-color-nametags";
+public class Rules {
+	public static enum Booleans {
+		FRIENDLY_FIRE("friendly-fire", true),
+		JOIN_AFTER_START("allow-join-after-start", true),
+		ALLOW_TEAM_CHANGE("allow-changing-team", false),
+		CLEAR_INV_ON_LEAVE("clear-items-when-leaving", false),
+		TEAM_ARMOR("use-team-armor", false),
+		KEEP_INVENTORY("keep-inventory", false),
+		REMOVE_DROPS("remove-death-drops", false),
+		TEAM_COLOR_NAMETAGS("team-color-nametags", true),
+		DISABLE_FALL_DAMAGE("disable-fall-damage", false);
+		public final String key;
+		private final boolean def;
+		private Booleans(String key, boolean def) {
+			this.key = key;
+			this.def = def;
+		}
+	}
 	
-	/**This will be used as default values for any rules that were not specified*/
-	private Set<String> keys;
+	private Rules parent;
+	
+	private final Map<String, Boolean> booleans = new HashMap<String, Boolean>();
 	public boolean modified;
 	
 	public boolean friendlyFire;
-	public long timeLimit;
-	public boolean joinAfterStart;
-	public boolean allowTeamChange;
-	public boolean clearInvOnLeave;
-	public boolean teamArmor;
-	public boolean keepInventory;
-	public boolean removeDrops;
 	public boolean teamColorNametags;
 	
 	String name;
@@ -50,35 +53,54 @@ public class Rules implements Cloneable {
 		this.name = name;
 	}
 	
+	public boolean getBoolean(Booleans b) {
+		if (booleans.containsKey(b.key))
+			return booleans.get(b.key);
+		else if (parent == null)
+			return b.def;
+		else
+			return parent.getBoolean(b);
+	}
+	
+	/**
+	 * Sets parent Rules for this to inherit from.
+	 * @param parent 
+	 */
+	public void setParent(Rules parent) throws CircularInheritanceException {
+		for (Rules r = parent; r != null; r = r.parent)
+			if (r == this)
+				throw new CircularInheritanceException();
+		this.parent = parent;
+	}
+	
 	/**
 	 * Loads the rules from <b>config</b>
-	 * @param config {@link ConfigurationSection} to load the rules from
+	 * @param config {@link ConfigurationSection} to load the rules from. Can be null
+	 * @param clear
 	 * @throws ConfigurationMissingKeysException if the config is missing some required keys. Currently there aren't any.
 	 */
-	public void load(ConfigurationSection config) throws ConfigurationMissingKeysException {
-		keys = config.getKeys(true);
-		
-		friendlyFire = config.getBoolean(friendlyFireO, true);
-		timeLimit = config.getLong(timeLimitO, -1);
-		joinAfterStart = config.getBoolean(joinAfterStartO, true);
-		allowTeamChange = config.getBoolean(allowTeamChangeO, true);
-		clearInvOnLeave = config.getBoolean(clearInvOnLeaveO, false);
-		teamArmor = config.getBoolean(teamArmorO, false);
-		keepInventory = config.getBoolean(keepInventoryO, false);
-		removeDrops = config.getBoolean(removeDropsO, false);
-		teamColorNametags = config.getBoolean(teamColorNametagO, false);
+	public void load(ConfigurationSection config, boolean clear) throws ConfigurationMissingKeysException {
+		if (clear) {
+			booleans.clear();
+		}
+		if (config != null)
+			for (Booleans b : Booleans.values())
+				if (config.isBoolean(b.key))
+					booleans.put(b.key, config.getBoolean(b.key));
 		
 		modified = false;
+	}
+	public void init() {
+		friendlyFire = getBoolean(Booleans.FRIENDLY_FIRE);
+		teamColorNametags = getBoolean(Booleans.TEAM_COLOR_NAMETAGS);
 	}
 	/**
 	 * Saves the rules to <b>config</b>
 	 * @param config - {@link ConfigurationSection} to save the rules to
 	 */
 	public void save(ConfigurationSection config) {
-		if (keys.contains(friendlyFireO))
-			config.set(friendlyFireO, friendlyFire);
-		if (keys.contains(timeLimitO))
-			config.set(timeLimitO, timeLimit);
+		for (Entry<String, Boolean> e : booleans.entrySet())
+			config.set(e.getKey(), e.getValue());
 		
 		modified = false;
 	}
@@ -94,19 +116,18 @@ public class Rules implements Cloneable {
 	}
 	
 	/**
-	 * Creates a copy of these Rules with a new name
+	 * Creates a new Rules object that will inherit from this Rules
 	 * @param newName - the name of the new copy
 	 * @return the new copy
 	 */
-	public Rules clone(String newName) {
-		Rules result;
+	public Rules getChild(String newName) {
 		try {
-			result = (Rules)clone();
-			result.name = newName;
-			return result;
-		} catch (CloneNotSupportedException e) {
+			Rules child = new Rules(newName);
+			child.setParent(this);
+			return child;
+		} catch (CircularInheritanceException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null; // TODO test
 	}
 }

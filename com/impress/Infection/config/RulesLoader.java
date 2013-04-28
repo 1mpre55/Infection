@@ -3,6 +3,7 @@ package com.impress.Infection.config;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -11,6 +12,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.impress.Infection.data.Rules;
+import com.impress.Infection.exceptions.CircularInheritanceException;
 import com.impress.Infection.exceptions.ConfigurationMismatchException;
 import com.impress.Infection.exceptions.ConfigurationMissingKeysException;
 import com.impress.Infection.exceptions.GameException;
@@ -29,8 +31,10 @@ public class RulesLoader extends ConfigManager {
 		return rules.get(name);
 	}
 	void addRules(String name, Rules rules) {
-		if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Invalid rules name");
-		if (rules == null) throw new IllegalArgumentException("Null rules");
+		if (name == null || name.trim().isEmpty())
+			throw new IllegalArgumentException("Invalid rules name");
+		if (rules == null)
+			throw new IllegalArgumentException("Null rules");
 		RulesLoader.rules.put(name, rules);
 		modified = true;
 	}
@@ -52,8 +56,7 @@ public class RulesLoader extends ConfigManager {
 				try {
 					loadRules(config, rulesName, parentStack);
 				} catch (GameException e) {
-					log.warning(e.getMessage() + " Rules " + rulesName + " failed to load");
-					e.printStackTrace();
+					log.warning(e.getMessage() + " Rules " + rulesName + " failed to load: " + e.getMessage());
 					parentStack.clear();
 				}
 		modified = false;
@@ -63,13 +66,14 @@ public class RulesLoader extends ConfigManager {
 		// Check inheritance loops
 		if (parentStack != null) {
 			if (parentStack.contains(rulesName))
-				throw new ConfigurationMismatchException("Inheritance loop in rules configuration.");
+				throw new CircularInheritanceException("Inheritance loop in rules configuration.");
 			parentStack.add(rulesName);
 		}
 		
 		// Check if the rules exist
 		ConfigurationSection rulesConfig = config.getConfigurationSection(rulesName);
-		if (rulesConfig == null) throw new ConfigurationMissingKeysException("Rules " + rulesName + " do not exist.");
+		if (rulesConfig == null)
+			throw new ConfigurationMismatchException("Rules " + rulesName + " are invalid.");
 		Rules rls = null;
 		
 		// Should we inherit from other rules
@@ -77,14 +81,15 @@ public class RulesLoader extends ConfigManager {
 		if (parent != null && parentStack != null) {
 			if (!rules.containsKey(parent))
 				loadRules(config, parent, parentStack);
-			rls = rules.get(parent).clone(rulesName);
+			rls = rules.get(parent).getChild(rulesName);
 		}
 		if (rls == null) {
 			if (!Rules.isRootValid(rulesConfig))
 				throw new ConfigurationMissingKeysException("Root rules " + rulesName + " is missing one or more keys.");
 			rls = new Rules(rulesName);
 		}
-		rls.load(rulesConfig);
+		rls.load(rulesConfig, true);
+		rls.init();
 		rules.put(rulesName, rls);
 		parentStack.remove(rulesName);
 	}
@@ -93,12 +98,16 @@ public class RulesLoader extends ConfigManager {
 		save(false);
 	}
 	public void save(boolean saveIfUnchanged) {
-		if (!modified && !saveIfUnchanged) return;
-		// TODO
-		saveRules(getConfig(), "");
+		if (!modified && !saveIfUnchanged)
+			return;
+		clearConfigurationSection(getConfig(), true);
+		for (Entry<String, Rules> e : rules.entrySet()) {
+			if (e.getValue() == null)
+				continue;
+			ConfigurationSection cs = getConfigurationSection(getConfig(), e.getKey());
+			clearConfigurationSection(cs, true);
+			e.getValue().save(cs);
+		}
 		modified = false;
-	}
-	private void saveRules(ConfigurationSection config, String rulesName) {
-		// TODO
 	}
 }

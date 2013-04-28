@@ -3,8 +3,19 @@
 
 test-game:
   events:
-    # Format: - arena:rules[:messages]
-  - test-arena:test-rules:test-messages
+    event1:
+      arena: test-arena
+      rules: test-rules
+      messages: infection
+      time: 600
+      teams:
+        TestTeam1:
+          spawns: test-spawns2
+        TemporaryTeam:
+          type: default
+          color: green
+          spawns: test-spawns1
+          
   # Determines how the game will choose next event. Can be SEQUENTIAL or RANDOM
   event-order: SEQUENTIAL
   # Whether or not the game will loop through the events. This is ignored if event-order is RANDOM.
@@ -12,36 +23,40 @@ test-game:
   
   teams:
     TestTeam1:
+      # Current types: default (regular), spectators, zombies and survivors. 
+      type: default
       # Use "name:" if the name must contain special characters.
       name: '#team:Test.'
       # Color of the team. Used for dyed armor, color nametags, chat messages and broadcasts.
       color: yellow
-      # Current types: default (regular), spectators, zombies and survivors. 
-      type: default
+      # Specify rules if this team should have different rules. If this is set it will override game's current rules.
+      rules: test-rules
+      # Specify rules if this team should have different messages. If this is set it will override game's current messages.
+      messages: test-messages
       # Disguise as a zombie. THIS ONLY AFFECTS ZOMBIE TYPE TEAMS
       disguise: true
       # Prevents direct damage from this team to other teams
-      prevent-damage-to:
-      - Zombies
-      - Survivors
-      # Disables fall damage for this team
-      disable-fall-damage: true
-      # Links this team to a specific spawn in an arena. If a spawn wasn't specified for the current arena, a random spawn will be chosen. 
-      spawns:
-        test-arena: test-spawn1
-      # Possibly add this later. This will make the team prefer this spawn when choosing one randomly.
-      # default-spawn: test-spawn
+      prevent-damage-to: [DefaultTeam]
+      # Links this team to specific spawns in the arena. If this is not set or spawns can't be found in the current arena, random spawns will be chosen.
+      spawns: test-spawns1
+    DefaultTeam:
+      type: default
 infection:
   events:
-  - infection1:inf-default:infection
-  - infection2:inf-hardcore:infection
+    inf1:
+      arena: infection1
+      time: 300
+    inf2:
+      arena: infection2
+      time: 240
   event-order: RANDOM
   loop: true
+  rules: infection
+  messages: infection
   teams:
     Zombies:
       type: zombies
+      spawns: zombies
     Survivors:
       type: survivors
-      spawns:
-        infection1: survivors
-        infection2: survivors
+      spawns: survivors

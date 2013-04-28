@@ -3,6 +3,8 @@ package com.impress.Infection.data;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 
+import com.impress.Infection.Team;
+
 public interface Spawns {
 	/**
 	 * Loads spawns from config
@@ -23,4 +25,12 @@ public interface Spawns {
 	 * @return whether or not this can return any spawn locations
 	 */
 	public boolean hasNext();
+	/**
+	 * Sets the current team. Use this to make a team "claim" this spawn.
+	 */
+	public void setCurrentTeam(Team team);
+	/**
+	 * Removes current team. Non-null result indicates that this spawn is "claimed" by that team.
+	 */
+	public Team getCurrentTeam();
 }

@@ -26,6 +26,7 @@ import com.impress.Infection.exceptions.AlreadyPlayingException;
 import com.impress.Infection.exceptions.GameAlreadyStartedException;
 import com.impress.Infection.exceptions.GameException;
 import com.impress.Infection.exceptions.GameFullException;
+import com.impress.Infection.exceptions.NoEventsException;
 import com.impress.Infection.exceptions.NoPermissionException;
 import com.impress.Infection.exceptions.TeamNotFoundException;
 import com.impress.Infection.listeners.MainListener;
@@ -51,7 +52,7 @@ public class Infection extends JavaPlugin {
 	 */
 	public static boolean tagAPI, disguiseCraft, mobDisguise;
 	
-	Map<String, Game> games;
+	public Map<String, Game> games;
 	List<Game> activeGames;
 	Game mainGame;
 	
@@ -90,7 +91,7 @@ public class Infection extends JavaPlugin {
 		disguiseCraft = config.getBoolean("hooks.DisguiseCraft", true) && pm.isPluginEnabled("DisguiseCraft");
 		mobDisguise = !disguiseCraft && config.getBoolean("hooks.MobDisguise", true) && pm.isPluginEnabled("MobDisguise");
 		
-		pm.registerEvents(new MainListener(), this);
+		pm.registerEvents(new MainListener(this), this);
 		if (tagAPI)
 			pm.registerEvents(new TagAPIListener(), this);
 		
@@ -212,11 +213,11 @@ public class Infection extends JavaPlugin {
 				   ChatColor.RED + "delete" + ChatColor.BLUE + " <kit>" + ChatColor.RESET + ": deletes the kit");
 		return true;
 	}
-	private boolean join(CommandSender sender, String[] args) {
+	public boolean join(CommandSender sender, String[] args) {
 		if (sender instanceof Player) {
 			Game game = null;
-			if (args.length > 0) {
-				game = games.get(args[0].trim());
+			if (args.length > 0 && !(args[0] = args[0].trim()).isEmpty()) {
+				game = games.get(args[0]);
 				if (game == null) {
 					sender.sendMessage("Game " + args[0] + " was not found");
 					return true;
@@ -230,7 +231,7 @@ public class Infection extends JavaPlugin {
 				}
 			
 			try {
-				if (args.length > 1)
+				if (args.length > 1 && !(args[1] = args[1].trim()).isEmpty())
 					game.playerJoin(IPlayer.getIPlayer((Player)sender), args[1]);
 				else
 					game.playerJoin(IPlayer.getIPlayer((Player)sender), null);
@@ -253,10 +254,11 @@ public class Infection extends JavaPlugin {
 				sender.sendMessage("Unexpected error occured");
 				getLogger().warning("Player failed to join " + game.name + ": " + e.getMessage());
 			}
-		} else sender.sendMessage("Only players can join games");
+		} else
+			sender.sendMessage("Only players can join games");
 		return true;
 	}
-	private boolean leave(CommandSender sender, String[] args) {
+	public boolean leave(CommandSender sender, String[] args) {
 		if (sender instanceof Player) {
 			IPlayer player = IPlayer.getIPlayer((Player)sender);
 			if (!player.isPlaying()) {
@@ -264,10 +266,11 @@ public class Infection extends JavaPlugin {
 				return true;
 			}
 			player.getGame().playerLeave(IPlayer.getIPlayer((Player)sender));
-		} else sender.sendMessage("Only players can leave games");
+		} else
+			sender.sendMessage("Only players can leave games");
 		return true;
 	}
-	private boolean changeTeam(CommandSender sender, String[] args) {
+	public boolean changeTeam(CommandSender sender, String[] args) {
 		if (sender instanceof Player) {
 			IPlayer player = IPlayer.getIPlayer((Player)sender);
 			if (!player.isPlaying()) {
@@ -275,7 +278,7 @@ public class Infection extends JavaPlugin {
 				return true;
 			}
 			try {
-				if (args.length > 0)
+				if (args.length > 0 && !(args[0] = args[0].trim()).isEmpty())
 					player.getGame().playerChangeTeam(player, args[0]);
 				else
 					player.getGame().playerChangeTeam(player, null);
@@ -289,7 +292,8 @@ public class Infection extends JavaPlugin {
 				// TODO debug
 				getLogger().info("[DEBUG] " + sender.getName() + " needs '" + e.getPermission() + "' permission to perform that action");
 			}
-		} else sender.sendMessage("Only players can switch teams");
+		} else
+			sender.sendMessage("Only players can switch teams");
 		return true;
 	}
 	private boolean admin(CommandSender sender, String[] args) {
@@ -312,25 +316,40 @@ public class Infection extends JavaPlugin {
 					sender.sendMessage("Game " + g.name + " was loaded");
 				} else
 					sender.sendMessage("Game " + args[2] + " was not found");
-			} else if (args.length > 2 && args[1].equalsIgnoreCase("start")) {
+			}
+			else if (args.length > 2 && args[1].equalsIgnoreCase("start")) {
 				if ((g = findGame(sender, args[2])) != null)
-					g.startEvent();
-			} else if (args.length > 2 && args[1].equalsIgnoreCase("end")) {
-				if ((g = findGame(sender, args[2])) != null)
+					try {
+						g.startEvent();
+						sender.sendMessage("Game started");
+					} catch (NoEventsException e) {
+						sender.sendMessage("Can't start: game has no events");
+					}
+			}
+			else if (args.length > 2 && args[1].equalsIgnoreCase("end")) {
+				if ((g = findGame(sender, args[2])) != null) {
 					g.endEvent();
-			} else if (args[1].equalsIgnoreCase("unload")) {
+					sender.sendMessage("Game ended");
+				}
+			}
+			else if (args[1].equalsIgnoreCase("unload")) {
 				if ((g = findGame(sender, args[2])) != null) {
 					games.remove(g.name);
 					g.endEvent();
+					g.closeGame();
 					sender.sendMessage("Game " + g.name + " was unloaded");
 				}
-			} else if (args[1].equalsIgnoreCase("list")) {
+			}
+			else if (args[1].equalsIgnoreCase("list")) {
 				if (gamesLoader.getAllGames().isEmpty())
 					sender.sendMessage("No games found");
 				else
 					sender.sendMessage(TextTools.separateWithCommas(gamesLoader.getAllGames().keySet()));
-			} else
+			}
+			else
 				sender.sendMessage(gameHelp);
+		} else if (args[0].equalsIgnoreCase("arena")) {
+			
 		} else
 			sender.sendMessage(help);
 		return true;

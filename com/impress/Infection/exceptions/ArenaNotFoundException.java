@@ -4,6 +4,7 @@ public class ArenaNotFoundException extends GameException {
 	private static final long serialVersionUID = -2176746475985902958L;
 	private String arenaName;
 	public ArenaNotFoundException(String arenaName) {
+		super("Arena " + arenaName + " was not found");
 		this.arenaName = arenaName;
 	}
 	public ArenaNotFoundException(String arenaName, String message) {

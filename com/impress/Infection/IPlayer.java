@@ -10,6 +10,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.impress.Infection.data.Kit;
+import com.impress.Infection.data.Messages;
+import com.impress.Infection.data.Rules;
+import com.impress.Infection.data.Rules.Booleans;
 import com.impress.Infection.listeners.TagAPIListener;
 import com.impress.Infection.utilities.InvTools;
 
@@ -78,7 +81,8 @@ public class IPlayer {
 //	private SavedPlayerInventory respawnInv;
 	
 	boolean joinGame(Team team, boolean broadcast) {
-		if (team == null) return false;
+		if (team == null)
+			return false;
 		this.team = team;
 		game = team.game;
 		
@@ -110,13 +114,13 @@ public class IPlayer {
 		//team.getRules().useCompass
 		
 		if (broadcast) {
-			if (team.getMessages().pJoin != null)
-				player.sendMessage(team.getMessages().pJoin
+			if (getMessages().pJoin != null)
+				player.sendMessage(getMessages().pJoin
 						.replaceAll("<TCOLOR>", getChatColor().toString())
 						.replaceAll("<TCOLOUR>", getChatColor().toString())
 						.replaceAll("<TEAM>", team.name));
-			if (team.getMessages().bJoin != null)
-				Bukkit.broadcastMessage(team.getMessages().bJoin
+			if (getMessages().bJoin != null)
+				Bukkit.broadcastMessage(getMessages().bJoin
 						.replaceAll("<TCOLOR>", getChatColor().toString())
 						.replaceAll("<TCOLOUR>", getChatColor().toString())
 						.replaceAll("<PCOLOR>", getChatColor().toString())
@@ -136,7 +140,7 @@ public class IPlayer {
 		
 		if (game != null) {
 			takeOffTeamArmor();
-			if (team.getRules().clearInvOnLeave) {
+			if (getRules().getBoolean(Booleans.CLEAR_INV_ON_LEAVE)) {
 				if (dropItems)
 					InvTools.dropItems(player.getInventory(), player.getLocation());
 				player.getInventory().clear();
@@ -206,13 +210,13 @@ public class IPlayer {
 		
 		putTeamArmor();
 		
-		if (Infection.tagAPI && this.team.getRules().teamColorNametags)
+		if (Infection.tagAPI && getRules().teamColorNametags)
 			TagAPIListener.refreshPlayer(player);
 	}
 	
 	void respawn() {
 		if (game.active)
-			respawn(team.getSpawn());
+			respawn(getRespawnLocation());
 		else
 			respawn(null);
 	}
@@ -224,14 +228,20 @@ public class IPlayer {
 			player.teleport(l);
 		}
 	}
+	public Location getRespawnLocation() {
+		if (team != null)
+			return team.getSpawn();
+		else
+			return null;
+	}
 	
 	private void putTeamArmor() {
-		if (team.getRules().teamArmor) {
+		if (getRules().getBoolean(Booleans.TEAM_ARMOR)) {
 			// TODO
 		}
 	}
 	private void takeOffTeamArmor() {
-		if (team.getRules().teamArmor) {
+		if (getRules().getBoolean(Booleans.TEAM_ARMOR)) {
 			// TODO
 		}
 	}
@@ -241,7 +251,7 @@ public class IPlayer {
 	 */
 	
 	public boolean isSpectator() {
-		return team instanceof Spectators;
+		return team != null && team instanceof Spectators;
 	}
 	/**
 	 * Forces the player onto a spectators team
@@ -284,6 +294,10 @@ public class IPlayer {
 					kit.giveToPlayer(player, false, false, true);
 	}
 	
+	public Player getPlayer() {
+		return player;
+	}
+	
 	/**
 	 * Returns whether the player is currently playing a game or not
 	 * @return true if the player is playing, false otherwise
@@ -306,11 +320,32 @@ public class IPlayer {
 		return team;
 	}
 	/**
+	 * @return player's rules or null if not playing
+	 */
+	public Rules getRules()	{
+		if (team == null)
+			return null;
+		else
+			return team.getRules();
+	}
+	/**
+	 * @return player's Messages or null if not playing
+	 */
+	public Messages getMessages() {
+		if (team == null)
+			return null;
+		else
+			return team.getMessages();
+	}
+	/**
 	 * Returns the color of player's team
 	 * @return chat color
 	 */
 	public ChatColor getChatColor() {
-		return team.cColor;
+		if (team == null)
+			return null;
+		else
+			return team.options.cColor;
 	}
 	/**
 	 * Sets player's compass target to a given location

@@ -27,7 +27,8 @@ public class Other {
 	 * @return random element from the array or null if the array is empty
 	 */
 	public static <V> V getRandomFromArray(V[] array) {
-		if (array.length < 1) return null;
+		if (array.length < 1)
+			return null;
 		return array[(int)(Math.random() * array.length)];
 	}
 	
@@ -37,13 +38,15 @@ public class Other {
 	 * @return the {@link Color} described by the string
 	 */
 	public static Color colorFromString(String string) {
-		if (string == null || string.isEmpty()) return null;
+		if (string == null || string.isEmpty())
+			return null;
 		if (string.indexOf(',') > 0)
 			try {
 				int[] rgb = TextTools.intsFromCSVString(string);
 				if (rgb.length == 3)
 					return Color.fromRGB(rgb[0], rgb[1], rgb[2]);
-			} catch (NumberFormatException e) {}
+			} catch (NumberFormatException e) {
+			} catch (IndexOutOfBoundsException e) {}
 		if (string.equalsIgnoreCase("none")) return null;
 		if (string.equalsIgnoreCase("red")) return Color.RED;
 		if (string.equalsIgnoreCase("blue")) return Color.BLUE;
@@ -69,9 +72,13 @@ public class Other {
 	 * @return the closest DyeColor to a given Color
 	 */
 	public static DyeColor colorToDyeColor(Color color) {
+		if (color == null)
+			return null;
+		
 		// Let the native methods try to convert
 		DyeColor result = DyeColor.getByColor(color);
-		if (result != null) return result;
+		if (result != null)
+			return result;
 		
 		// Use known similar colors. This should cover all colors returned by colorFromString(String) where the string is the name of the color
 		if (color.equals(Color.RED)) result = DyeColor.RED;
@@ -90,7 +97,8 @@ public class Other {
 		else if (color.equals(Color.NAVY)) result = DyeColor.BLUE;
 		else if (color.equals(Color.OLIVE)) result = DyeColor.BROWN;
 		else if (color.equals(Color.SILVER)) result = DyeColor.SILVER;
-		if (result != null) return result;
+		if (result != null)
+			return result;
 		
 		
 		// If all else fails, find the closest color using math

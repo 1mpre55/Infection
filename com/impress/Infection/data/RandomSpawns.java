@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
+import com.impress.Infection.Team;
 import com.impress.Infection.utilities.LocationTools;
 import com.impress.Infection.utilities.Other;
 
@@ -19,6 +20,7 @@ public class RandomSpawns implements Spawns {
 	private static final String spawnsO = "locations";
 	private List<Location> spawns;
 	private final World world;
+	Team currentTeam = null;
 	/**
 	 * Creates a new RandomSpawns and loads spawns from the config.
 	 * @param config - ConfigurationSection containing the spawns.
@@ -51,7 +53,9 @@ public class RandomSpawns implements Spawns {
 		if (spawns.isEmpty())
 			return null;
 		Location[] result = new Location[n];
-		List<Location> s = new ArrayList<Location>();
+		List<Location> s = new ArrayList<Location>(spawns.size());
+		for (int i = 0; i < spawns.size(); i++)
+			s.add(null);
 		Collections.copy(s, spawns);
 		
 		for (int i = 0, c = -1; i < n; i++, c--) {
@@ -66,5 +70,13 @@ public class RandomSpawns implements Spawns {
 	@Override
 	public boolean hasNext() {
 		return !spawns.isEmpty();
+	}
+	@Override
+	public Team getCurrentTeam() {
+		return currentTeam;
+	}
+	@Override
+	public void setCurrentTeam(Team team) {
+		currentTeam = team;
 	}
 }

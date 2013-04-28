@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,11 +12,15 @@ import org.bukkit.configuration.ConfigurationSection;
 import com.impress.Infection.data.Arena;
 import com.impress.Infection.data.Messages;
 import com.impress.Infection.data.Rules;
+import com.impress.Infection.data.Rules.Booleans;
+import com.impress.Infection.data.Spawns;
 import com.impress.Infection.exceptions.AlreadyPlayingException;
 import com.impress.Infection.exceptions.ArenaNotFoundException;
 import com.impress.Infection.exceptions.ConfigurationMismatchException;
+import com.impress.Infection.exceptions.ConfigurationMissingKeysException;
 import com.impress.Infection.exceptions.GameAlreadyStartedException;
 import com.impress.Infection.exceptions.GameException;
+import com.impress.Infection.exceptions.NoEventsException;
 import com.impress.Infection.exceptions.NoPermissionException;
 import com.impress.Infection.exceptions.TeamNotFoundException;
 import com.impress.Infection.utilities.Other;
@@ -37,6 +42,9 @@ public class Game {
 	int players;
 	boolean active;
 	
+	Rules defRules;
+	Messages defMessages;
+	
 	/**
 	 * Creates an empty Game object with no teams and no arenas.
 	 * @param plugin - the plugin that this Game is hosted by
@@ -44,9 +52,9 @@ public class Game {
 	 */
 	public Game(Infection plugin, String name) {
 		if (plugin == null)
-			throw new IllegalArgumentException("Plugin can't be null");
+			throw new IllegalArgumentException("null plugin");
 		if (name == null)
-			name = "a game";
+			throw new IllegalArgumentException("null name");
 		this.plugin = plugin;
 		this.name = name;
 		
@@ -74,46 +82,111 @@ public class Game {
 	 * @throws ConfigurationMismatchException TODO 
 	 */
 	void load(ConfigurationSection config) throws GameException {
-		List<String> events = config.getStringList("arenas");
-		if (events != null)
-			for (String event : events) {
-				String[] s = event.split(":", 4);
-				if (s.length < 2)
-					throw new ConfigurationMismatchException("Invalid arena listing format: " + event);
-				Event e = new Event();
-				e.arena = plugin.arenaLoader.getArena(s[0].trim());
-				if (e.arena == null)
-					throw new ArenaNotFoundException(s[0].trim(), "Arena " + s[0].trim() + " was not found");
-				e.rules = plugin.rulesLoader.getRules(s[1].trim());
-				if (e.rules == null)
-					throw new GameException("Rules " + s[1].trim() + "were not found");
-				if (s.length > 2)
-					e.messages = plugin.messagesLoader.getMessages(s[2]);
-				if (e.messages == null)
-					e.messages = plugin.defaultMessages;
-				if (e.messages == null)
-					throw new GameException("Messages were not found.");
-				this.events.add(e);
-			}
-		sequential = "SEQUENTIAL".equalsIgnoreCase(config.getString("arena-order"));
+		sequential = "SEQUENTIAL".equalsIgnoreCase(config.getString("event-order"));
 		loop = config.getBoolean("loop", false);
 		if (config.isConfigurationSection("teams"))
 			for (String teamName : config.getConfigurationSection("teams").getKeys(false).toArray(new String[0])) {
 				ConfigurationSection cs = config.getConfigurationSection("teams." + teamName);
-				Team team = Team.createByType(cs.getString("type"), this, cs.getString("name", teamName));
-				if (team == null)
-					team = new Team(this, cs.getString("name", teamName));
+				Team team = Team.createByType(cs.getString("type"), this, cs.getString("name", teamName), true);
+				team.configName = teamName;
 				team.load(cs);
 				teams.put(team.name.toLowerCase(), team);
 			}
+		if (config.isConfigurationSection("events")) {
+			for (String s : config.getConfigurationSection("events").getKeys(false)) {
+				ConfigurationSection c = config.getConfigurationSection("events." + s);
+				if (c == null)
+					continue;
+				Event e = new Event();
+				try {
+					e.load(c, this, null, plugin.defaultMessages, -2);
+					this.events.add(e);
+				} catch (GameException ex) {
+					plugin.getLogger().warning("event " + s + " failed to load: " + ex.getMessage());
+				}
+			}
+		}
+		defRules = plugin.rulesLoader.getRules(config.getString("rules"));
+		if (defRules == null) {
+			defRules = new Rules("default");
+			defRules.load(null, true);
+		}
+		defMessages = plugin.messagesLoader.getMessages(config.getString("messages"));
+		if (defMessages == null) {
+			// TODO create defMessages similarly to defRules above
+			try {
+				defMessages = new Messages(config);
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	class Event {
 		Arena arena;
 		Rules rules;
 		Messages messages;
+		long time;
+		Map<Team, Team.Options> teams;
+		
+		private void load(ConfigurationSection config, Game game, Rules defRules, Messages defMessages, long defTime) throws GameException {
+			arena = plugin.arenaLoader.getArena(config.getString("arena"));
+			if (arena == null)
+				if (config.isString("arena"))
+					throw new ArenaNotFoundException(config.getString("arena"));
+				else
+					throw new ConfigurationMissingKeysException("Events must have an arena");
+			time = config.getLong("time", defTime);
+			if (time < -1)
+				throw new GameException("Time missing or invalid");
+			rules = plugin.rulesLoader.getRules(config.getString("rules"));
+			if (rules == null)
+				if (defRules != null)
+					rules = defRules;
+				else if (config.isString("rules"))
+					throw new GameException("Rules " + config.getString("rules") + "were not found");
+				else
+					throw new ConfigurationMissingKeysException("Missing rules");
+			messages = plugin.messagesLoader.getMessages(config.getString("messages"));
+			if (messages == null)
+				if (defMessages != null)
+					messages = defMessages;
+				else if (config.isString("messages"))
+					throw new GameException("Messages " + config.getString("messages") + "were not found");
+				else
+					throw new ConfigurationMissingKeysException("Missing messages");
+			teams = new HashMap<Team, Team.Options>();
+			if (config.isConfigurationSection("teams"))
+				for (String s : config.getConfigurationSection("teams").getKeys(false))
+					if (config.isConfigurationSection("teams." + s)) {
+						ConfigurationSection cs = config.getConfigurationSection("teams." + s);
+						Team team = game.teams.get(s);
+						if (team == null || !s.equals(team.configName)) {
+							team = null;
+							for (Team t : game.teams.values())
+								if (s.equals(t.configName)) {
+									team = t;
+									break;
+								}
+						}
+						if (team == null) {
+							team = Team.createByType(cs.getString("type"), game, cs.getString("name", s), true);
+							team.configName = s;
+							team.load(cs);
+							teams.put(team, null);
+						}
+						else
+							teams.put(team, team.loadOptions(team.rootOptions.getChild(), cs));
+					}
+		}
 	}
 	
-	public void startEvent() {
+	public void startEvent() throws NoEventsException {
 		if (active)
 			return;
 		
@@ -124,7 +197,7 @@ public class Game {
 		Bukkit.broadcastMessage("[DEBUG] Game " + name + ": next event started");
 		
 		for (Team team : teams.values())
-			team.respawnAll();
+			team.eventStarted();
 	}
 	
 	public void endEvent() {
@@ -137,7 +210,28 @@ public class Game {
 		chooseNewEvent = true;
 		
 		for (Team team : teams.values())
-			team.respawnAll();
+			team.eventEnded();
+	}
+	public void closeGame() {
+		for (Team team : teams.values())
+			team.unload();
+	}
+	
+	public boolean isActive() {
+		return active;
+	}
+	
+	public Rules getRules() {
+		if (event == null || event.rules == null)
+			return defRules;
+		else
+			return event.rules;
+	}
+	public Messages getMessages() {
+		if (event == null || event.messages == null)
+			return defMessages;
+		else
+			return event.messages;
 	}
 	
 	/**
@@ -152,8 +246,6 @@ public class Game {
 	public void playerJoin(IPlayer player, String team) throws GameException {
 		if (player == null)
 			throw new IllegalArgumentException("Null player");
-		if (event == null)
-			throw new TeamNotFoundException("Can't join right now");
 		if (!player.player.hasPermission(Infection.basePerm + "join") && !player.player.hasPermission(Infection.basePerm + "join." + name))
 			throw new NoPermissionException(Infection.basePerm + "join", "You don't have permission to join");
 //		if (players.size() >= rules.maxPlayers && !player.player.hasPermission(Infection.basePerm + "ignore.maxplayers"))
@@ -175,7 +267,7 @@ public class Game {
 					&& !player.player.hasPermission(Infection.basePerm + "ignore.teambalance." + name))
 				throw new NoPermissionException(Infection.basePerm + "ignore.teambalance", "You can only join the team with the least players");
 		}
-		if (active && !join.getRules().joinAfterStart && !player.player.hasPermission(Infection.basePerm + "joinafterstart")
+		if (active && !join.getRules().getBoolean(Booleans.JOIN_AFTER_START) && !player.player.hasPermission(Infection.basePerm + "joinafterstart")
 				&& !player.player.hasPermission(Infection.basePerm + "joinafterstart." + name))
 			throw new GameAlreadyStartedException();
 		if (player.joinGame(join, true)) {
@@ -217,7 +309,7 @@ public class Game {
 	public void playerChangeTeam(IPlayer player, String team) throws TeamNotFoundException, NoPermissionException {
 		if (player == null)
 			throw new IllegalArgumentException("Null player");
-		if (!player.team.getRules().allowTeamChange && !player.player.hasPermission(Infection.basePerm + "changeteam")
+		if (!player.team.getRules().getBoolean(Booleans.ALLOW_TEAM_CHANGE) && !player.player.hasPermission(Infection.basePerm + "changeteam")
 				&& !player.player.hasPermission(Infection.basePerm + "changeteam." + name))
 			throw new NoPermissionException(Infection.basePerm + "changeteam", "You don't have permission to change your team");
 		
@@ -237,7 +329,9 @@ public class Game {
 			System.out.println("[DEBUG] Player " + player.player.getName() + " switched to " + join.name + " team");
 	}
 	
-	void chooseEvent(boolean random) {
+	void chooseEvent(boolean random) throws NoEventsException {
+		if (events.isEmpty())
+			throw new NoEventsException();
 		if (random)
 			setEvent(Other.getRandomFromList(events));
 		else {
@@ -248,13 +342,28 @@ public class Game {
 		}
 	}
 	private void setEvent(Event event) {
+		if (this.event != null) {
+			for (Spawns spawns : this.event.arena.tSpawns.values())
+				if (spawns.getCurrentTeam() != null && teams.containsValue(spawns.getCurrentTeam()))
+					spawns.setCurrentTeam(null);
+			for (Entry<Team, Team.Options> e : this.event.teams.entrySet())
+				if (e.getValue() == null) {
+					e.getKey().unload();
+					teams.remove(e.getKey().name);
+				}
+		}
 		if (event == null)
 			return;
 		this.event = event;
+		for (Entry<Team, Team.Options> e : event.teams.entrySet())
+			if (e.getValue() == null && !teams.containsValue(e.getKey()))
+				teams.put(e.getKey().name, e.getKey());
+		for (Team team : teams.values())
+			team.newEvent();
 	}
-	public Event getEvent() {
-		return event;
-	}
+//	public Event getEvent() {
+//		return event;
+//	}
 	
 	/**
 	 * Finds the smallest team.

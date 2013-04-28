@@ -215,17 +215,19 @@ public class InvTools {
 		inv.clear(-1, -1);
 	}
 	/**
-	 * Naturally drops all inventory's contents in a given location. If inventory is a {@link PlayerInventory} it'll drop the armor as well.
-	 * Note: Contents will not be removed from the inventory!
+	 * Naturally drops all inventory's contents in a given location. If inventory is a {@link PlayerInventory} it'll drop the armor as well.<br>
+	 * <b>Note: Contents will not be removed from the inventory!</b>
 	 * @param inventory - inventory to get the items from
 	 * @param location - location where the items will be dropped.
 	 */
 	public static void dropItems(Inventory inventory, Location location) {
 		World world = location.getWorld();
 		for (int i = 0; i < inventory.getSize(); i++)
-			world.dropItemNaturally(location, inventory.getItem(i));
+			if (inventory.getItem(i) != null)
+				world.dropItemNaturally(location, inventory.getItem(i));
 		if (inventory instanceof PlayerInventory && inventory.getSize() == 36)
 			for (int i = 36; i < 40; i++)
-				world.dropItemNaturally(location, inventory.getItem(i));
+				if (inventory.getItem(i) != null)
+					world.dropItemNaturally(location, inventory.getItem(i));
 	}
 }

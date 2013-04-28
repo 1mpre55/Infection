@@ -8,12 +8,13 @@ import org.bukkit.event.Listener;
 
 import com.impress.Infection.IPlayer;
 import com.impress.Infection.Infection;
+import com.impress.Infection.data.Rules.Booleans;
 
 public class TagAPIListener implements Listener {
 	private IPlayer p;
 	@EventHandler (priority = EventPriority.LOW)
 	public void onNameTag(org.kitteh.tag.PlayerReceiveNameTagEvent e) {
-		if ((p = IPlayer.getIPlayer(e.getNamedPlayer())).isPlaying() && p.getTeam().colorNametag)
+		if ((p = IPlayer.getIPlayer(e.getNamedPlayer())).isPlaying() && p.getRules().getBoolean(Booleans.TEAM_COLOR_NAMETAGS))
 			e.setTag(p.getChatColor() + ChatColor.stripColor(e.getTag()));
 	}
 	
